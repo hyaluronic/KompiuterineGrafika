@@ -1,34 +1,82 @@
 <html>
-<canvas id="animationCanvas" width="400" height="400"></canvas>
+<canvas id="canvas" width="1500" height="1500"></canvas>
 <script>
-let canvas
-let canvasContext
-let increment = 0
-let speed = 5
+var canvas;
+var ctx
+var WIDTH;
+var HEIGHT;
+var intervalId = 0;
+var x;
+var y;
+var alphaBig = 0;
+var alphaSmall = 0;
+var startBigX = 900;
+var startBigY = 500;
+var bigRadius = 100;
+var smallRadius = 30
+var step = 2;
+
 window.onload = function() {
-  canvas = document.getElementById('animationCanvas');
-  canvasContext = canvas.getContext('2d');
-  setInterval(drawEverything, 50);
+    canvas = document.getElementById("canvas")
+    ctx = canvas.getContext("2d")
+    WIDTH = canvas.width
+    HEIGHT = canvas.height
+    intervalId = setInterval(drawAll, 100);
 }
-function drawEverything() {
-  bounce()
-  increment = increment + speed;
-canvasContext.fillStyle = 'black';
-  canvasContext.fillRect(0,0,canvas.width,canvas.height);
-  canvasContext.fillStyle = 'blue';
-  canvasContext.fillRect(increment,200,10,10);
-  canvasContext.fillStyle = 'green';
-  canvasContext.fillRect(200,increment,10,10);
-  canvasContext.fillStyle = 'red';
-  canvasContext.fillRect(increment,increment,10,10);
+
+function drawAll() {
+    ctx.clearRect(0,0,WIDTH,HEIGHT);
+    ctx.lineWidth  = 2
+
+    var startSmallX = startBigX + (bigRadius - smallRadius) * 2;
+    var startSmallY = startBigY + (bigRadius - smallRadius);
+    var rimRadius = startSmallX - startBigX;
+    var rimX = startBigX
+    var rimY = startBigY + (startSmallY - startBigY) / 2
+
+    alphaBig = drawCircle(startBigX, startBigY, bigRadius, alphaBig);
+    alphaSmall = drawCircle(startSmallX, startSmallY, smallRadius, alphaSmall);
+    drawRim(rimX, rimY, rimRadius, smallRadius);
+
+    startBigX -= step;
 }
-function bounce(){
-  if(increment < 0) {
-  speed = -speed
-  }
-  if(increment > 400) {
-  speed = -speed
-  }
+
+function drawRim(startX, startY, radius, smallRadius) {
+    ctx.beginPath();
+
+    ctx.lineWidth  = 5
+    ctx.arc(startX, startY, radius, Math.PI / 2 * 3, Math.PI * 2, false);
+    ctx.lineTo(startX + radius, startY + smallRadius)
+    ctx.moveTo(startX, startY + smallRadius)
+    ctx.lineTo(startX, startY - radius - smallRadius / 2)
+    ctx.lineTo(startX - smallRadius / 2, startY - radius - smallRadius / 2)
+    ctx.lineTo(startX + smallRadius / 2, startY - radius - smallRadius / 2)
+
+    ctx.stroke();
+}
+
+function drawCircle(startX, startY, radius, alpha) {
+    ctx.beginPath();
+    ctx.arc(startX, startY, radius, 0, Math.PI*2, true);
+
+    alpha += (step * 360) / (2 * Math.PI * radius);
+    for (var i = 0; i < 12; i++){
+        beta = alpha * Math.PI / 180
+        getNextPoint(startX, startY, radius, beta)
+        ctx.moveTo(startX, startY)
+        ctx.lineTo(x, y)
+        alpha = alpha + 30
+    }
+
+    ctx.closePath();
+    ctx.stroke();
+
+    return alpha
+}
+
+function getNextPoint(startX, startY, radius, beta) {
+    x = startX + radius * Math.sin(beta);
+    y = startY + radius * Math.cos(beta);
 }
 </script>
 </html>
