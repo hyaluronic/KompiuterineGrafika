@@ -1,5 +1,5 @@
 <html>
-<canvas id="canvas" width="1500" height="1500"></canvas>
+<canvas id="canvas" width="1500" height="750"></canvas>
 <script>
 var canvas;
 var ctx
@@ -12,7 +12,7 @@ var alphaBig = 0;
 var alphaSmall = 0;
 var bigRadius = 100;
 var smallRadius = 30
-var step = 2;
+var step = 1;
 var earthX = 750;
 var earthY = 750;
 var earthRadius = 500;
@@ -23,12 +23,18 @@ window.onload = function() {
     ctx = canvas.getContext("2d")
     WIDTH = canvas.width
     HEIGHT = canvas.height
-    drawAll()
-    intervalId = setInterval(drawAll, 100);
+    ctx.translate(earthX, earthY);
+    ctx.rotate(90 * Math.PI / 180);
+    ctx.translate(-earthX, -earthY);
+    intervalId = setInterval(drawAll, 10);
 }
 
 function drawAll() {
-    ctx.clearRect(0,0,WIDTH,HEIGHT);
+    if (startBigX <= earthRadius) {
+        return
+    }
+
+    ctx.clearRect(0,0,1500,1500);
     ctx.lineWidth  = 2
 
     var startBigY = earthY - earthRadius
