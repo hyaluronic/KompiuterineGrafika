@@ -8,13 +8,13 @@
             let h = canvas.height
             const F = 0.61802
             for (let i = 0; i < 15; i++) {
-                ctx.fillStyle = i % 2 == 0 ? "magenta" : "cyan"
+                ctx.fillStyle = i % 2 === 0 ? "magenta" : "cyan"
                 ctx.beginPath()
                 ctx.rect(0, 0, w * F / 2, h)
                 ctx.rect(0, 0, w * F, h * 0.2)
                 ctx.rect(0, h * 0.4, w * F * 3 / 4, h * 0.2)
                 ctx.fill()
-                ctx.transform(F, 0, 0, F, i % 2 == 0 ? w : h * (1+F), 0)
+                ctx.transform(F, 0, 0, F, i % 2 === 0 ? w : h * (1+F), 0)
                 ctx.rotate(Math.PI/2)
             }
         }
