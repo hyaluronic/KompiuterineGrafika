@@ -1,0 +1,74 @@
+<html>
+<head>
+    <script type="text/javascript"
+            src="http://ff.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=5VWCZpK4rBfeG2f43U5CiBYyp0XiPD1uMKwqOkmkhTnedOxXkgFe6x8O3n_6nFaMk5WH7P61YxVxlN-GNcDIH5uSaYgtoPdWAcWMaR5Lx8aaAHb-55hwNqYlqLcaHoOY"
+            charset="UTF-8"></script>
+    <link rel="stylesheet" crossorigin="anonymous"
+          href="http://ff.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cDovL2tsZXZhcy5taWYudnUubHQvfnJpbWFzay93cC1jb250ZW50L3VwbG9hZHMvY2FudmFzL3RyYW5zZm9ybS5odG1s"/>
+    <script type="application/javascript">
+
+        function draw() {
+            var canvas = document.getElementById('canvas');
+            if (canvas.getContext) {
+                var ctx = canvas.getContext("2d");
+                // Draw border
+                drawBorder();
+                // transform
+                ctx.save();
+                ctx.scale(0.5, 0.5);
+                ctx.fillStyle = "blue";
+                draw_L();
+                ctx.restore();
+                // transform
+                ctx.save();
+                ctx.translate(500, 250);
+                ctx.scale(-0.5, -0.5);
+                ctx.fillStyle = "red";
+                draw_L();
+                ctx.restore();
+                // transform
+                ctx.save();
+                ctx.translate(500, 375);
+                ctx.scale(-0.25, 0.25);
+                ctx.fillStyle = "black";
+                draw_L();
+                ctx.restore();
+                // transform
+                ctx.save();
+                ctx.translate(500, 375);
+                ctx.scale(-0.25, 0.25);
+                ctx.fillStyle = "black";
+                ctx.restore();
+                draw_L();
+            }
+
+            function drawBorder() {
+                ctx.beginPath();
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(500, 0);
+                ctx.lineTo(500, 500);
+                ctx.lineTo(0, 500);
+                ctx.closePath();
+                ctx.stroke();
+            }
+
+            function draw_L() {
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(250, 0);
+                ctx.lineTo(250, 400);
+                ctx.lineTo(500, 400);
+                ctx.lineTo(500, 500);
+                ctx.lineTo(0, 500);
+                ctx.lineTo(0, 0);
+                ctx.fill();
+            }
+        }
+    </script>
+</head>
+<body onload="draw();">
+<h1>Transformations of coordinates</h1>
+<canvas id="canvas" width="500" height="500"></canvas>
+</body>
+</html>
