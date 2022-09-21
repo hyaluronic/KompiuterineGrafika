@@ -1,0 +1,55 @@
+<html>
+<head>
+    <script type="application/javascript">
+
+        function draw() {
+            var canvas = document.getElementById('canvas');
+            if (canvas.getContext) {
+                var ctx = canvas.getContext("2d");
+
+// Draw border
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(500, 0);
+                ctx.lineTo(500, 500);
+                ctx.lineTo(0, 500);
+                ctx.closePath();
+                ctx.stroke();
+// step = 5
+                drawF(8);
+            }
+
+            // Recursive draw
+            function drawF(step) {
+                if (step > 0) {
+                    step = step - 1;
+                    ctx.save();
+                    ctx.save();
+                    ctx.transform(0.5, 0, 0, 0.5, 0, 0);
+                    drawF(step);
+                    ctx.restore();
+                    ctx.transform(0.5, 0, 0, 0.5, 250, 0);
+                    drawF(step);
+                    ctx.restore();
+                    ctx.transform(0.5, 0, 0, 0.5, 0, 250);
+                    drawF(step);
+                } else drawT();
+            }
+
+            function drawT() {
+                // Filled red triangle
+                //ctx.fillStyle = "rgb(0,0,0)";
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(500, 0);
+                ctx.lineTo(0, 500);
+                ctx.fill();
+            }
+        }
+    </script>
+</head>
+<body onLoad="draw();">
+<h1>Sierpinski triangle</h1>
+<canvas id="canvas" width="500" height="500"></canvas>
+</body>
+</html>
