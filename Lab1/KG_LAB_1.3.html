@@ -2,10 +2,11 @@
 <head>
     <script type="application/javascript">
 
+        let canvas;
+        let ctx;
+
         let frame = 0;
         let frameCount = 250;
-        var canvas;
-        var ctx;
 
         function start() {
             canvas = document.getElementById('canvas');
@@ -23,18 +24,16 @@
         }
 
         function draw() {
-            if (canvas.getContext) {
-                drawFirst(frame / frameCount);
-                drawSecond(frame / frameCount);
-                drawThird(frame / frameCount);
-                drawForth(frame / frameCount);
-            }
+            drawFirst(frame / frameCount);
+            drawSecond(frame / frameCount);
+            drawThird(frame / frameCount);
+            drawForth(frame / frameCount);
 
             function drawFirst(time) {
                 time = Math.min(time, 1);
                 ctx.resetTransform();
                 ctx.clearRect(0, 0, 500, 500);
-                ctx.fillStyle = "red"
+                ctx.fillStyle = "red";
                 ctx.rotate(Math.PI / 2 * time);
                 ctx.scale((1 - time) + 0.5 * time, (1 - time) + -0.5 * time);
                 drawT();
@@ -48,7 +47,7 @@
                 if (time >= 0) {
                     time = Math.min(time, 1);
                     ctx.resetTransform();
-                    ctx.fillStyle = "blue"
+                    ctx.fillStyle = "blue";
                     ctx.translate(250 * time, 250 * time);
                     ctx.scale((1 - time) + 0.5 * time, (1 - time) + -0.5 * time);
                     drawT();
@@ -63,8 +62,8 @@
                 if (time >= 0) {
                     time = Math.min(time, 1);
                     ctx.resetTransform();
-                    ctx.fillStyle = "cyan"
-                    ctx.translate(500/8 * time, 500/8*5 * time);
+                    ctx.fillStyle = "cyan";
+                    ctx.translate(500 / 8 * time, 500 / 8 * 5 * time);
                     ctx.scale((1 - time) + 0.25 * time, (1 - time) + 0.25 * time);
                     drawT();
                     if (time < 1) {
@@ -78,9 +77,9 @@
                 if (time >= 0) {
                     time = Math.min(time, 1);
                     ctx.resetTransform();
-                    ctx.fillStyle = "magenta"
+                    ctx.fillStyle = "magenta";
                     ctx.translate(250 * time, 500 * time);
-                    ctx.rotate(Math.PI/2 * time)
+                    ctx.rotate(Math.PI / 2 * time);
                     ctx.scale((1 - time) + -0.5 * time, (1 - time) + -0.5 * time);
                     drawT();
                     if (time < 1) {
