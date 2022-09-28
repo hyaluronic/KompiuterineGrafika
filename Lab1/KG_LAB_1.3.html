@@ -1,0 +1,111 @@
+<html>
+<head>
+    <script type="application/javascript">
+
+        let frame = 0;
+        let frameCount = 250;
+        var canvas;
+        var ctx;
+
+        function start() {
+            canvas = document.getElementById('canvas');
+            if (canvas.getContext) {
+                ctx = canvas.getContext("2d");
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(500, 0);
+                ctx.lineTo(500, 500);
+                ctx.lineTo(0, 500);
+                ctx.closePath();
+                ctx.stroke();
+                setInterval(draw, 10);
+            }
+        }
+
+        function draw() {
+            if (canvas.getContext) {
+                drawFirst(frame / frameCount);
+                drawSecond(frame / frameCount);
+                drawThird(frame / frameCount);
+                drawForth(frame / frameCount);
+            }
+
+            function drawFirst(time) {
+                time = Math.min(time, 1);
+                ctx.resetTransform();
+                ctx.clearRect(0, 0, 500, 500);
+                ctx.fillStyle = "red"
+                ctx.rotate(Math.PI / 2 * time);
+                ctx.scale((1 - time) + 0.5 * time, (1 - time) + -0.5 * time);
+                drawT();
+                if (time < 1) {
+                    frame += 1;
+                }
+            }
+
+            function drawSecond(time) {
+                time -= 1;
+                if (time >= 0) {
+                    time = Math.min(time, 1);
+                    ctx.resetTransform();
+                    ctx.fillStyle = "blue"
+                    ctx.translate(250 * time, 250 * time);
+                    ctx.scale((1 - time) + 0.5 * time, (1 - time) + -0.5 * time);
+                    drawT();
+                    if (time < 1) {
+                        frame += 1;
+                    }
+                }
+            }
+
+            function drawThird(time) {
+                time -= 2;
+                if (time >= 0) {
+                    time = Math.min(time, 1);
+                    ctx.resetTransform();
+                    ctx.fillStyle = "cyan"
+                    ctx.translate(500/8 * time, 500/8*5 * time);
+                    ctx.scale((1 - time) + 0.25 * time, (1 - time) + 0.25 * time);
+                    drawT();
+                    if (time < 1) {
+                        frame += 1;
+                    }
+                }
+            }
+
+            function drawForth(time) {
+                time -= 3;
+                if (time >= 0) {
+                    time = Math.min(time, 1);
+                    ctx.resetTransform();
+                    ctx.fillStyle = "magenta"
+                    ctx.translate(250 * time, 500 * time);
+                    ctx.rotate(Math.PI/2 * time)
+                    ctx.scale((1 - time) + -0.5 * time, (1 - time) + -0.5 * time);
+                    drawT();
+                    if (time < 1) {
+                        frame += 1;
+                    }
+                }
+            }
+
+            function drawT() {
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, 250);
+                ctx.lineTo(250, 250);
+                ctx.lineTo(250, 500);
+                ctx.lineTo(500 / 4 * 3, 500);
+                ctx.lineTo(500, 500 / 4 * 3);
+                ctx.lineTo(500, 0);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+    </script>
+</head>
+<body onLoad="start();">
+<h1>Lab 1</h1>
+<canvas id="canvas" width="500" height="500"></canvas>
+</body>
+</html>
