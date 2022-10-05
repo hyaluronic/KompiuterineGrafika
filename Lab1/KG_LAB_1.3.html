@@ -79,8 +79,8 @@
                     ctx.resetTransform();
                     ctx.fillStyle = "magenta";
                     ctx.translate(250 * time, 500 * time);
-                    ctx.rotate(Math.PI / 2 * time);
-                    ctx.scale((1 - time) + -0.5 * time, (1 - time) + -0.5 * time);
+                    ctx.rotate(-Math.PI / 2 * time);
+                    ctx.scale((1 - time) + 0.5 * time, (1 - time) + 0.5 * time);
                     drawT();
                     if (time < 1) {
                         frame += 1;
