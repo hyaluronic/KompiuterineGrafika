@@ -106,7 +106,7 @@ $(function () {
 
         const latheGeometry = new THREE.LatheGeometry(points, 12, 0, 2 * Math.PI);
 
-        const meshMaterial = new THREE.MeshLambertMaterial({color: color});
+        const meshMaterial = new THREE.MeshPhongMaterial({color: color, shininess: 100})
         meshMaterial.side = THREE.DoubleSide;
 
         const latheMesh = new THREE.Mesh(latheGeometry, meshMaterial);
