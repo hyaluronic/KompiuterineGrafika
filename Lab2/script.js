@@ -236,7 +236,7 @@ $(function () {
             }
         }
 
-        const kingColumns = ["E1", "D8"]
+        const kingColumns = ["E1", "E8"]
 
         for (let i = 0; i < 2; i++) {
             for (let j = 0; j < 1; j++) {
@@ -247,7 +247,7 @@ $(function () {
             }
         }
 
-        const queenColumns = ["D1", "E8"]
+        const queenColumns = ["D1", "D8"]
 
         for (let i = 0; i < 2; i++) {
             for (let j = 0; j < 1; j++) {
