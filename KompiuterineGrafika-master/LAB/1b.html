@@ -1,0 +1,176 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<script type="application/javascript">
+			class Transformation {
+				constructor(tx, ty, rotate, sx, sy) {
+					this.tx = tx;
+					this.ty = ty;
+					this.rotate = rotate;
+					this.sx = sx;
+					this.sy = sy;
+				}
+			}
+			let currentTransformation = null;
+			let finalTransformation = null;
+			let transformationConstants = null;
+			let transformationSteps = null;
+			let startingTransformation = null;
+			let animationSpeed = null;
+			let loop = null;
+
+			function draw(figure) {
+				//clearing old values
+				this.currentTransformation = null;
+				this.finalTransformation = null;
+				this.transformationConstants = null;
+				this.transformationSteps = null;
+				this.startingTransformation = null;
+				this.animationSpeed = null;
+				this.loop = null;
+
+				var canvas = document.getElementById("canvas");
+				const transformations = [
+					new Transformation(0, 0, -0.5, -0.5, 0.5), //1
+					new Transformation(500, 0, 0, -0.5, 0.5), //2
+					new Transformation(250, 250, 0.5, 0.5, 0.5), //3
+					new Transformation(437, 437, -1, 0.25, 0.25), // 4
+				];
+				this.startingTransformation = new Transformation(0, 0, 0, 1, 1);
+
+				//Animation const
+				this.animationSpeed = 50;
+				this.transformationSteps = 100;
+
+				if (canvas.getContext) {
+					var ctx = canvas.getContext("2d");
+					ctx.clearRect(0, 0, canvas.width, canvas.height);
+					//border
+					drawBorder();
+
+					//drawing selected figure
+					ctx.save();
+					if (figure == 0) {
+						drawFigure();
+					}
+
+					if (figure > 0) {
+						drawSpecificFigure(figure - 1);
+					}
+					ctx.restore();
+				}
+
+				function drawSpecificFigure(figure) {
+					this.currentTransformation = this.startingTransformation;
+					this.finalTransformation = transformations[figure];
+					resolveTransformationConstants();
+
+					setInterval(adaptNextStepAndDraw, this.animationSpeed);
+				}
+
+				function adaptNextStepAndDraw() {
+					//adapt next step
+					this.currentTransformation.tx = getCurrentTransformation(
+						this.transformationConstants.tx,
+						this.finalTransformation.tx,
+						this.currentTransformation.tx
+					);
+					this.currentTransformation.ty = getCurrentTransformation(
+						this.transformationConstants.ty,
+						this.finalTransformation.ty,
+						this.currentTransformation.ty
+					);
+					this.currentTransformation.rotate = getCurrentTransformation(
+						this.transformationConstants.rotate,
+						this.finalTransformation.rotate,
+						this.currentTransformation.rotate
+					);
+					this.currentTransformation.sx = getCurrentTransformation(
+						this.transformationConstants.sx,
+						this.finalTransformation.sx,
+						this.currentTransformation.sx
+					);
+					this.currentTransformation.sy = getCurrentTransformation(
+						this.transformationConstants.sy,
+						this.finalTransformation.sy,
+						this.currentTransformation.sy
+					);
+
+					//clear canvas
+					ctx.fillStyle = "white";
+					ctx.fillRect(0, 0, canvas.width, canvas.height);
+					drawBorder();
+					ctx.save();
+					//transform and draw
+					ctx.translate(this.currentTransformation.tx, this.currentTransformation.ty);
+					ctx.rotate(Math.PI * this.currentTransformation.rotate);
+					ctx.scale(this.currentTransformation.sx, this.currentTransformation.sy);
+					drawFigure();
+					ctx.restore();
+				}
+
+				//resolve how much change is needed for transformation
+				function resolveTransformationConstants() {
+					var tx = this.finalTransformation.tx - this.currentTransformation.tx;
+					var ty = this.finalTransformation.ty - this.currentTransformation.ty;
+					var rotate = this.finalTransformation.rotate - this.currentTransformation.rotate;
+					var sx = this.finalTransformation.sx - this.currentTransformation.sx;
+					var sy = this.finalTransformation.sy - this.currentTransformation.sy;
+					this.transformationConstants = new Transformation(
+						tx / this.transformationSteps,
+						ty / this.transformationSteps,
+						rotate / this.transformationSteps,
+						sx / this.transformationSteps,
+						sy / this.transformationSteps
+					);
+				}
+
+				function getCurrentTransformation(transformationConst, finalTransformation, currentTransformation) {
+					if (transformationConst > 0) {
+						if (currentTransformation < finalTransformation) {
+							return currentTransformation + transformationConst;
+						}
+					} else {
+						if (currentTransformation > finalTransformation) {
+							return currentTransformation + transformationConst;
+						}
+					}
+
+					return currentTransformation;
+				}
+
+				function drawFigure() {
+					ctx.fillStyle = "black";
+					ctx.beginPath();
+					ctx.moveTo(0, 0);
+					ctx.lineTo(500, 0);
+					ctx.lineTo(500, 250);
+					ctx.lineTo(437, 437);
+					ctx.lineTo(312, 437);
+					ctx.lineTo(250, 500);
+					ctx.lineTo(0, 500);
+					ctx.closePath();
+					ctx.fill();
+				}
+
+				function drawBorder() {
+					ctx.beginPath();
+					ctx.moveTo(0, 0);
+					ctx.lineTo(500, 0);
+					ctx.lineTo(500, 500);
+					ctx.lineTo(0, 500);
+					ctx.closePath();
+					ctx.stroke();
+				}
+			}
+		</script>
+	</head>
+
+	<body onload="draw(0);">
+		<h1>Fractal animations</h1>
+		<div><canvas id="canvas" width="500" height="500"></canvas></div>
+		<div><button onclick="draw(1)">1</button> <button onclick="draw(2)">2</button></div>
+		<div><button onclick="draw(3)">3</button> <button onclick="draw(4)">4</button></div>
+		<div><button onclick="draw(0)">Reset</button></div>
+	</body>
+</html>

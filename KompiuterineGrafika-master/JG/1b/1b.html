@@ -1,0 +1,190 @@
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="application/javascript">
+        class Transformation {
+            constructor(tx, ty, rotate, sx, sy) {
+                this.tx = tx;
+                this.ty = ty;
+                this.rotate = rotate;
+                this.sx = sx;
+                this.sy = sy;
+            }
+        }
+        //public 
+        let currentTransormation = null;
+        let finalTransformation = null;
+        let transformationConstants = null;
+        let transformationSteps = null;
+        let startingTransformation = null;
+        let animationSpeed = null;
+        let loop = null;
+
+
+        function draw(figure) {
+            //clearing old values
+            this.currentTransormation = null;
+            this.finalTransformation = null;
+            this.transformationConstants = null;
+            this.transformationSteps = null;
+            this.startingTransformation = null;
+            this.animationSpeed = null;
+            this.loop = null;
+
+            var canvas = document.getElementById('canvas');
+            //Figures const
+            const transformations = [new Transformation(125, 125, 0, 0.25, -0.25),//1
+            new Transformation(500, 250, 1, 0.5, 0.5),//2
+            new Transformation(0, 250, -0.5, -0.5, 0.5),//3
+            new Transformation(250, 250, 0, 0.5, 0.5)];//4
+            this.startingTransformation = new Transformation(0, 0, 0, 1, 1);
+
+            //Animation const
+            this.animationSpeed = 50;
+            this.transformationSteps = 100;
+
+            if (canvas.getContext) {
+                var ctx = canvas.getContext("2d");
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                //border
+                drawBorder();
+
+                //drawing selected figure
+                ctx.save();
+                if (figure == 0) {
+                    drawFigure()
+                }
+
+                if (figure > 0) {
+                    drawSpecificFigure(figure - 1)
+                }
+                ctx.restore();
+            }
+
+            function drawSpecificFigure(figure) {
+                this.currentTransormation = this.startingTransformation;
+                this.finalTransformation = transformations[figure]
+                resolveTransformationConstants();
+
+                setInterval(adaptNextStepAndDraw, this.animationSpeed)
+            }
+
+            function adaptNextStepAndDraw() {
+                //adapt next step
+                if (this.transformationConstants.tx > 0) {
+                    if (this.currentTransormation.tx < this.finalTransformation.tx) {
+                        this.currentTransormation.tx = this.currentTransormation.tx + this.transformationConstants.tx;
+                    }
+                }
+                else {
+                    if (this.currentTransormation.tx > this.finalTransformation.tx) {
+                        this.currentTransormation.tx = this.currentTransormation.tx + this.transformationConstants.tx;
+                    }
+                }
+
+
+                if (this.transformationConstants.ty > 0) {
+                    if (this.currentTransormation.ty < this.finalTransformation.ty) {
+                        this.currentTransormation.ty = this.currentTransormation.ty + this.transformationConstants.ty;
+                    }
+                }
+                else {
+                    if (this.currentTransormation.ty > this.finalTransformation.ty) {
+                        this.currentTransormation.ty = this.currentTransormation.ty + this.transformationConstants.ty;
+                    }
+                }
+
+                if (this.transformationConstants.rotate > 0) {
+                    if (this.currentTransormation.rotate < this.finalTransformation.rotate) {
+                        this.currentTransormation.rotate = this.currentTransormation.rotate + this.transformationConstants.rotate;
+                    }
+                }
+                else {
+                    if (this.currentTransormation.rotate > this.finalTransformation.rotate) {
+                        this.currentTransormation.rotate = this.currentTransormation.rotate + this.transformationConstants.rotate;
+                    }
+                }
+
+
+                if (this.transformationConstants.sx > 0) {
+                    if (this.currentTransormation.sx < this.finalTransformation.sx) {
+                        this.currentTransormation.sx = this.currentTransormation.sx + this.transformationConstants.sx;
+                    }
+                }
+                else {
+                    if (this.currentTransormation.sx > this.finalTransformation.sx) {
+                        this.currentTransormation.sx = this.currentTransormation.sx + this.transformationConstants.sx;
+                    }
+                }
+
+                if (this.transformationConstants.sy > 0) {
+                    if (this.currentTransormation.sy < this.finalTransformation.sy) {
+                        this.currentTransormation.sy = this.currentTransormation.sy + this.transformationConstants.sy;
+                    }
+                }
+                else {
+                    if (this.currentTransormation.sy > this.finalTransformation.sy) {
+                        this.currentTransormation.sy = this.currentTransormation.sy + this.transformationConstants.sy;
+                    }
+                }
+
+
+                //clear canvas
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                drawBorder();
+                ctx.save();
+                //transform and draw
+                ctx.translate(this.currentTransormation.tx, this.currentTransormation.ty);
+                ctx.rotate(Math.PI * this.currentTransormation.rotate);
+                ctx.scale(this.currentTransormation.sx, this.currentTransormation.sy);
+                drawFigure();
+                ctx.restore();
+            }
+
+            //resolve how much change is needed for transformation and adapt it
+            function resolveTransformationConstants() {
+                var tx = this.currentTransormation.tx > this.finalTransformation.tx ? (this.finalTransformation.tx - this.currentTransormation.tx) : -(this.currentTransormation.tx - this.finalTransformation.tx);
+                var ty = this.currentTransormation.ty > this.finalTransformation.ty ? (this.finalTransformation.ty - this.currentTransormation.ty) : -(this.currentTransormation.ty - this.finalTransformation.ty);
+                var rotate = this.currentTransormation.rotate > this.finalTransformation.rotate ? (this.finalTransformation.rotate - this.currentTransormation.rotate) : -(this.currentTransormation.rotate - this.finalTransformation.rotate);
+                var sx = this.currentTransormation.sx > this.finalTransformation.sx ? (this.finalTransformation.sx - this.currentTransormation.sx) : -(this.currentTransormation.sx - this.finalTransformation.sx);
+                var sy = this.currentTransormation.sy > this.finalTransformation.sy ? (this.finalTransformation.sy - this.currentTransormation.sy) : -(this.currentTransormation.sy - this.finalTransformation.sy);
+                this.transformationConstants = new Transformation(tx / this.transformationSteps, ty / this.transformationSteps, rotate / this.transformationSteps, sx / this.transformationSteps, sy / this.transformationSteps);
+            }
+
+            function drawFigure() {
+                ctx.fillStyle = "black";
+                ctx.beginPath();
+                ctx.moveTo(125, 0);
+                ctx.lineTo(500, 0);
+                ctx.lineTo(500, 500);
+                ctx.lineTo(375, 500);
+                ctx.lineTo(0, 500);
+                ctx.lineTo(0, 312)
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            function drawBorder() {
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(500, 0);
+                ctx.lineTo(500, 500);
+                ctx.lineTo(0, 500);
+                ctx.closePath();
+                ctx.stroke();
+            }
+        }
+    </script>
+</head>
+
+<body onload="draw(0);">
+    <h1>Fractal homework 1b</h1>
+    <div><canvas id="canvas" width="500" height="500"></canvas></div>
+    <div><button onclick="draw(1)">1</button> <button onclick="draw(2)">2</button></div>
+    <div><button onclick="draw(3)">3</button> <button onclick="draw(4)">4</button></div>
+    <div><button onclick="draw(0)">Reset</button></div>
+</body>
+
+</html>

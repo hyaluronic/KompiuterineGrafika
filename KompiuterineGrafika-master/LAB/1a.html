@@ -1,0 +1,117 @@
+<html>
+	<!-- 
+TRANSFORMACIJU MATRICOS:
+T_1: (0.25, 0, 0, -0.25, 125, 125)
+
+0.25   0      125
+0      -0.25  125
+0      0       1
+
+T_2: (-0.5, 0, 0, -0.5, 500, 250)
+
+-0.5   0      500
+0      -0.5   250
+0      0      1
+
+T_3: (0, 0.5, 0.5, 0, 0, 250)
+
+0      0.5   0
+0.5    0     250
+0      0     1
+
+
+T_4: (0.5, 0, 0, 0.5, 250, 250)
+
+0.5    0      250
+0      0.5    250
+0      0      1
+-->
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<script type="application/javascript">
+			function draw(step, color) {
+				var startStep = step;
+				var canvas = document.getElementById("canvas");
+				if (canvas.getContext) {
+					var ctx = canvas.getContext("2d");
+					ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+					ctx.beginPath();
+					ctx.moveTo(0, 0);
+					ctx.lineTo(500, 0);
+					ctx.lineTo(500, 500);
+					ctx.lineTo(0, 500);
+					ctx.closePath();
+					ctx.stroke();
+					ctx.save();
+					drawF(step, color);
+					ctx.restore();
+				}
+				function drawF(step, isColor, color) {
+					if (step > 0) {
+						step = step - 1;
+						ctx.save();
+						ctx.save();
+						ctx.save();
+						ctx.transform(0, 0.5, 0.5, 0, 0, 0); // TOP LEFT
+						if (step == startStep - 1) {
+							drawF(step, isColor, "orange");
+						}
+						drawF(step, isColor, color);
+						ctx.restore();
+						ctx.transform(-0.5, 0, 0, 0.5, 500, 0); // TOP RIGHT
+						if (step == startStep - 1) {
+							drawF(step, isColor, "green");
+						}
+						drawF(step, isColor, color);
+						ctx.restore();
+						ctx.transform(0, 0.5, -0.5, 0, 250, 250); // BOTTOM LEFT
+						if (step == startStep - 1) {
+							drawF(step, isColor, "blue");
+						}
+						drawF(step, isColor, color);
+						ctx.restore();
+						ctx.transform(-0.25, 0, 0, -0.25, 437, 437); // BOTTOM RIGHT
+						if (step == startStep - 1) {
+							drawF(step, isColor, "red");
+						}
+						drawF(step, isColor, color);
+					} else drawFigure(isColor, color);
+				}
+				function drawFigure(isColor, color) {
+					if (isColor) {
+						ctx.fillStyle = color;
+					} else {
+						ctx.fillStyle = "black";
+					}
+					ctx.beginPath();
+					ctx.moveTo(0, 0);
+					ctx.lineTo(500, 0);
+					ctx.lineTo(500, 250);
+					ctx.lineTo(437, 437);
+					ctx.lineTo(312, 437);
+					ctx.lineTo(250, 500);
+					ctx.lineTo(0, 500);
+					ctx.closePath();
+					ctx.fill();
+				}
+			}
+
+			function getStepsAndDraw(color) {
+				step = document.getElementById("steps").value;
+				draw(step, color);
+			}
+		</script>
+	</head>
+
+	<body onload="draw();">
+		<h1>Fractal exercise</h1>
+		<canvas id="canvas" width="500" height="500"></canvas>
+		<div style="margin-top: 20px">
+			<div><button onclick="getStepsAndDraw(false);">Without colors</button> <input type="text" id="steps" /></div>
+		</div>
+		<div style="margin-top: 20px">
+			<div><button onclick="getStepsAndDraw(true);">With colors</button></div>
+		</div>
+	</body>
+</html>

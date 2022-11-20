@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>3bLab</title>
+    <script type="text/javascript" src="lib/three.js"></script>
+    <script type="text/javascript" src="lib/jquery-1.9.0.js"></script>
+    <script type="text/javascript" src="lib/stats.js"></script>
+    <script type="text/javascript" src="lib/dat.gui.js"></script>
+    <script type="text/javascript" src="lib/TrackballControls.js"></script>
+    <style>
+        body {
+            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<div id="Stats-output">
+</div>
+<!-- Div which will hold the Output -->
+<div id="WebGL-output">
+</div>
+
+<!-- Javascript code that runs our Three.js examples -->
+<script type="text/javascript">
+
+    // once everything is loaded, we run our Three.js stuff.
+    $(function () {
+
+        var stats = initStats();
+
+        // create a scene, that will hold all our elements such as objects, cameras and lights.
+        var scene = new THREE.Scene();
+
+        // create a camera, which defines where we're looking at.
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+        camera.position.x = 120;
+        camera.position.y = 60;
+        camera.position.z = 180;
+        camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+        var camera1 = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 200);
+        camera1.position.x = 0;
+        camera1.position.y = 50;
+        camera1.position.z = 50;
+        camera1.lookAt(scene.position);
+
+        var camera2 = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 0.1, 200);
+        camera2.position.x = 100;
+        camera2.position.y = 20;
+        camera2.position.z = -50;
+        camera2.fov = 100;
+        camera2.lookAt(scene.position);
+
+        // console.log(camera1.position)
+        const cameraHelper1 = new THREE.CameraHelper(camera1);
+        scene.add(cameraHelper1)
+        // console.log(cameraHelper1.position)
+        const cameraHelper2 = new THREE.CameraHelper(camera2);
+        scene.add(cameraHelper2)
+
+        // create a render and set the size
+        var renderer = new THREE.WebGLRenderer();
+
+        renderer.setClearColorHex(0xEEEEEE, 1.0);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // create the ground plane
+        var planeGeometry = new THREE.PlaneGeometry(180, 180);
+        const texture = THREE.ImageUtils.loadTexture('textures/ChessBoard.png');
+        const textureMaterial = new THREE.MeshBasicMaterial({map: texture})
+        var planeMaterial = new THREE.MeshLambertMaterial({color: 0xffffff});
+        var plane = new THREE.Mesh(planeGeometry, textureMaterial);
+
+        // var axes = new THREE.AxisHelper(50);
+        // scene.add(axes);
+
+        plane.rotation.x = -0.5 * Math.PI;
+        plane.position.x = 0
+        plane.position.y = 0
+        plane.position.z = 0
+
+        scene.add(plane);
+
+        overviewMode = true;
+        perspectiveViewMode = false;
+        dollyViewMode = false;
+        var zooming = true;
+        var cameraHelper1Off = false;
+        var cameraHelper2Off = false;
+
+        var directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+        directionalLight.position.set(-20, 40, 60);
+        scene.add(directionalLight);
+
+        // add subtle ambient lighting
+        var ambientLight = new THREE.AmbientLight(0x292929);
+        scene.add(ambientLight);
+
+        // add the output of the renderer to the html element
+        $("#WebGL-output").append(renderer.domElement);
+
+        // call the render function
+        var step = 0;
+
+        var fovDiff = (150 - 50) / 125;
+
+        var controls = new function () {
+            this.cameraHelperPerspective = false;
+            this.cameraHelperDolly = false;
+            this.fov = 75
+            this.perspective = "Overview";
+            this.dollyView = function () {
+                step = 0;
+                overviewMode = false;
+                perspectiveViewMode = false;
+                dollyViewMode = true;
+                this.perspective = "DOLLY";
+            }
+
+
+            this.perspectiveView = function () {
+                step = 0;
+                dollyViewMode = false;
+                overviewMode = false;
+                perspectiveViewMode = true;
+                this.perspective = "ROTATE";
+            }
+
+            this.overview = function () {
+                step = 0;
+                dollyViewMode = false;
+                perspectiveViewMode = false;
+                overviewMode = true;
+                this.perspective = "Overview";
+            }
+        };
+
+        var gui = new dat.GUI();
+        gui.add(controls, 'perspectiveView');
+        gui.add(controls, 'dollyView');
+        gui.add(controls, 'overview');
+        gui.add(controls, 'cameraHelperPerspective').onChange(function (value) {
+            cameraHelper1Off = !cameraHelper1Off;
+        });
+        gui.add(controls, 'cameraHelperDolly').onChange(function (value) {
+            cameraHelper2Off = !cameraHelper2Off;
+        });
+        gui.add(controls, 'fov', 25, 100);
+        gui.add(controls, 'perspective').listen();
+
+
+        var firstMesh = createMesh();
+        firstMesh.position.set(-50, -50, -50);
+        scene.add(firstMesh);
+
+        var secondMesh = createMesh();
+        secondMesh.position.set(0, 18, -50);
+        scene.add(secondMesh);
+
+
+        var cameraModel1 = createCameraMesh()
+        cameraModel1.position.y = camera1.position.y;
+        cameraModel1.position.z = camera1.position.z;
+        scene.add(cameraModel1)
+
+        var cameraModel2 = createCameraMesh()
+
+        cameraModel2.rotateY(-Math.PI / 2)
+        cameraModel2.position.x = camera2.position.x - 10;
+        cameraModel2.position.y = camera2.position.y;
+        cameraModel2.position.z = camera2.position.z;
+        scene.add(cameraModel2)
+
+        const angleChange = 1 / (60 * 10);
+        var camControl = new THREE.TrackballControls(camera, renderer.domElement);
+        render();
+
+
+        function render() {
+
+            stats.update();
+
+            scene.add(cameraModel1)
+            scene.add(cameraModel2)
+
+            camera1.fov = controls.fov;
+            x = 10 + (50 * (Math.sin(step)));
+            camera1.lookAt(new THREE.Vector3(x, 18, 50));
+            firstMesh.position = new THREE.Vector3(x, 18, 50);
+
+            step += 0.01;
+            // camera.up = new THREE.Vector3(0, 1, 0);
+            camera.fov = controls.fov
+            camera.lookAt(new THREE.Vector3(0, 0, 0))
+
+
+            x = 10 + (50 * (Math.sin(step)));
+            cameraModel1.lookAt(new THREE.Vector3(x, 18, 50))
+            if (firstMesh.position.x <= 30 && firstMesh.position.x >= -30) {
+                cameraModel1.lookAt(firstMesh.position);
+                if (cameraModel1.up.y > 0 && cameraModel1.up.z < 1) {
+                    cameraModel1.up.y -= angleChange
+                    cameraModel1.up.z += angleChange
+                }
+            } else {
+                if (cameraModel1.up.y < 1 && cameraModel1.up.z > 0) {
+                    cameraModel1.up.y += angleChange
+                    cameraModel1.up.z -= angleChange
+                }
+            }
+
+            if (zooming) {
+                if (camera2.position.x < 50) {
+                    zooming = !zooming;
+                }
+                camera2.position.x -= 0.5;
+            } else {
+                if (camera2.position.x > 150) {
+                    zooming = !zooming;
+                }
+                camera2.position.x += 0.5;
+            }
+            cameraModel2.position.x = camera2.position.x;
+            cameraModel2.position.y = camera2.position.y;
+            cameraModel2.position.z = camera2.position.z;
+            renderer.render(scene, camera);
+
+
+            if (firstMesh.position.x <= 30 && firstMesh.position.x >= -30) {
+                camera1.lookAt(firstMesh.position);
+                if (camera1.up.y > 0 && camera1.up.z < 1) {
+                    camera1.up.y -= angleChange
+                    camera1.up.z += angleChange
+                } else {
+                    camera1.up = new THREE.Vector3(0, 0, 1)
+                }
+
+            } else {
+                if (camera1.up.y < 1 && camera1.up.z > 0) {
+                    camera1.up.y += angleChange
+                    camera1.up.z -= angleChange
+                } else {
+                    // camera1.up = new THREE.Vector3(0, 1, 0)
+                }
+            }
+            if(cameraHelper1Off){
+                scene.add(cameraHelper1)
+                renderer.render(scene, camera1);
+            } else {
+                scene.remove(cameraHelper1)
+            }
+
+            if (zooming) {
+                if (camera2.position.x < 25) {
+                    zooming = !zooming;
+
+                }
+                if (camera2.fov < 150) {
+                    camera2.fov += fovDiff;
+                }
+                camera2.position.x -= 0.5;
+            } else {
+                if (camera2.position.x > 150) {
+                    zooming = !zooming;
+                }
+                if (camera2.fov > 10) {
+                    camera2.fov -= fovDiff;
+                }
+                camera2.position.x += 0.5;
+            }
+
+            camera2.lookAt(new THREE.Vector3(0, 18, -50));
+            secondMesh.position = new THREE.Vector3(0, 18, -50);
+            if(cameraHelper2Off){
+                scene.add(cameraHelper2)
+                renderer.render(scene, camera2);
+            } else {
+                scene.remove(cameraHelper2)
+            }
+
+            camera.updateProjectionMatrix();
+            camera1.updateProjectionMatrix();
+            camera2.updateProjectionMatrix()
+
+            cameraHelper1.update();
+            cameraHelper2.update();
+
+            camControl.update()
+
+            requestAnimationFrame(render);
+            if (overviewMode) {
+                renderer.render(scene, camera);
+            }
+            if (perspectiveViewMode) {
+                scene.remove(cameraModel1)
+                renderer.render(scene, camera1);
+            }
+            if (dollyViewMode) {
+                scene.remove(cameraModel2)
+                renderer.render(scene, camera2);
+            }
+        }
+
+        function createCameraMesh() {
+            const cameraMesh = new THREE.Object3D();
+            var rollGeometry = new THREE.CylinderGeometry(2, 2, 0.8, 32);
+            var frontGeometry = new THREE.CylinderGeometry(0.5, 0.1, 1.5, 32);
+            var bodyGeometry = new THREE.CubeGeometry(2.5, 2.5, 5);
+            var material = new THREE.MeshLambertMaterial({color: 0xcccccc});
+            var roll = new THREE.Mesh(rollGeometry, material);
+            roll.rotation.z = Math.PI / 2;
+            roll.position.x = 0;
+            roll.position.y = 2;
+            roll.position.z = 1;
+            cameraMesh.add(roll);
+
+            var body = new THREE.Mesh(bodyGeometry, material);
+            cameraMesh.add(body);
+
+            var front = new THREE.Mesh(frontGeometry, material);
+            front.position.z = 2.5;
+            front.rotation.x = Math.PI / 2;
+            cameraMesh.add(front)
+
+            var roll2 = new THREE.Mesh(rollGeometry, material);
+            roll2.rotation.z = Math.PI / 2;
+            roll2.scale.x = roll2.scale.x * 0.5
+            roll2.scale.y = roll2.scale.y * 0.5
+            roll2.scale.z = roll2.scale.z * 0.5
+            roll2.position.x = 0;
+            roll2.position.y = 1.5;
+            roll2.position.z = -1.75;
+            cameraMesh.add(roll2);
+
+            var axes = new THREE.AxisHelper(60);
+            cameraMesh.add(axes);
+
+            cameraMesh.position.y = 15
+            cameraMesh.position.z = 15
+
+            return cameraMesh
+        }
+
+        function createMesh() {
+            var pointsX = [
+                250, 240, 230,
+                220, 210, 200, 200, 205,
+                214, 230, 220, 207, 210,
+                218, 228, 226, 224, 221,
+                217, 209, 198, 188, 184,
+                182, 190, 180, 175, 179,
+                172, 173, 250];
+            var pointsY = [
+                34, 46, 58,
+                70, 82, 94, 106, 118,
+                130, 142, 154, 166, 178,
+                190, 202, 214, 226, 238,
+                250, 262, 274, 286, 298,
+                310, 322, 334, 346, 358,
+                370, 382, 382];
+            var points = [];
+            var height = 5;
+            var count = 31;
+            for (var i = 0; i < count; i++) {
+                points.push(new THREE.Vector3(25 - pointsX[i] / 10, 0.01, (pointsY[30] - pointsY[i] - 174) / 10));
+            }
+
+            var latheGeometry = new THREE.LatheGeometry(points, Math.ceil(12), 0, 2 * Math.PI);
+
+            var meshMaterial = new THREE.MeshLambertMaterial({color: 0x444444});
+            meshMaterial.side = THREE.DoubleSide;
+
+            var mesh = new THREE.Mesh(latheGeometry, meshMaterial);
+            mesh.rotateX(-Math.PI / 2)
+            return mesh;
+        }
+
+        function initStats() {
+
+            var stats = new Stats();
+
+            stats.setMode(0);
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.left = '0px';
+            stats.domElement.style.top = '0px';
+
+            $("#Stats-output").append(stats.domElement);
+
+            return stats;
+        }
+
+
+    })
+    ;
+
+
+</script>
+</body>
+</html>

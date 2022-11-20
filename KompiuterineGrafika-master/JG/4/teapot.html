@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title></title>
+    <script type="text/javascript" src="lib/three.js"></script>
+    <script type="text/javascript" src="lib/jquery-1.9.0.js"></script>
+    <script type="text/javascript" src="lib/stats.js"></script>
+    <script type="text/javascript" src="lib/ConvexGeometry.js"></script>
+    <script type="text/javascript" src="lib/dat.gui.js"></script>
+    <script type="text/javascript" src="lib/TrackballControls.js"></script>
+    <script type="text/javascript" src="lib/uclass_TeapotGeometry.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<div id="container"></div>
+</body>
+
+<script type="x-shader/x-vertex" id="teapotVertexShader">
+	precision mediump float;
+
+	varying vec3 vPosition;
+	varying vec3 vPosInCamera;
+	varying vec3 vNormal;
+	varying vec2 vUv;
+	uniform float uDirX, uDirY, uShininess;
+
+	void main(void) {
+		vUv = uv;
+		vNormal = normalMatrix * normal;
+		vPosition = position;
+	    vPosInCamera = (viewMatrix * modelMatrix * vec4(position, 1.0 )).xyz;
+    	gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0 );
+	}
+</script>
+
+<script type="x-shader/x-vertex" id="teapotFragmentShader">
+	precision mediump float;
+
+	uniform float uScale;
+	uniform float uEdge;
+	uniform float redColor, greenColor, blueColor;
+
+	varying vec3 vPosition;
+	varying vec3 vPosInCamera;
+	varying vec3 vNormal;
+	varying vec2 vUv;
+	uniform float uDirX, uDirY, uShininess, shininess;
+    #extension GL_OES_standard_derivatives : enable
+
+	void main() {
+		vec3 ambColor = vec3(0.1,0.1,0.1);
+      	vec3 diffColor = vec3(0.6+redColor*0.4,0.6+greenColor*0.4,0.6+blueColor*0.4);
+		vec3 specColor = vec3(redColor,greenColor,blueColor);
+        vec4 spec = vec4(0.0);
+
+
+		vec3 lightDir = normalize(vec3(uDirX,uDirY,0.1));
+		float diffLightWeight = max(dot(lightDir, normalize(vNormal)), 0.0);
+        vec3 eyeDir = normalize(-vPosInCamera);
+        vec3 reflDir = -reflect(lightDir, vNormal);
+        float specLightWeight = pow(max(dot(reflDir, eyeDir), 0.0), uShininess);
+		vec3 lightWeight = ambColor + diffColor * diffLightWeight
+			+ specColor * specLightWeight;
+	    vec3 color = vec3(lightWeight);
+
+    vec3 blue = vec3(0.0,0.0,0.9);
+    vec3 yellow = vec3(1,1,0);
+
+    float u = fract(vUv.x * uScale);
+    float v = fract(vUv.y * uScale);
+    float f = u*(u-0.5)*(u-1.0)*v*(v-0.5)*(v-1.0);
+    float grad = length(vec2(dFdx(f),dFdy(f)));
+    float d = uEdge*grad;
+    float edgeFactor = smoothstep(-d, d, f);
+    vec3 finalColor = mix(yellow,blue,edgeFactor);
+
+    u = fract(vUv.x * uScale)-0.5;
+    v = fract(vUv.y * uScale)-0.5;
+    if(u >= v) f = (u - 0.5) * u * (u-1.0);
+    else f = v * (v-0.5) * (v-1.0);
+    grad = length(vec2(dFdx(f),dFdy(f)));
+    d = uEdge*grad;
+    edgeFactor = smoothstep(-d, d, f);
+    finalColor = mix(blue, finalColor, edgeFactor);
+
+    // right bottom blue outter circle
+    u = fract(vUv.x * uScale)-0.5;
+    v = fract(vUv.y * uScale)-1.0;
+    if(v>0.5 || u<0.5){f = -u * -(u*0.5)*-(u-1.0);}
+    grad = length(vec2(dFdx(f),dFdy(f)));
+    d = uEdge*grad;
+    edgeFactor = smoothstep(-d, d, f);
+    finalColor = mix(yellow, finalColor, edgeFactor);
+
+    u = fract(vUv.x * uScale)-0.5;
+    v = fract(vUv.y * uScale)-0.5;
+    if(v<0.5 && u>0.0) {f = -v*-(v-0.5)*-(v-1.0);}
+    grad = length(vec2(dFdx(f),dFdy(f)));
+    d = uEdge*grad;
+    edgeFactor = smoothstep(-d, d, f);
+    finalColor = mix(blue, finalColor, edgeFactor);
+
+    u = fract(vUv.x * uScale);
+    v = fract(vUv.y * uScale);
+    f = -u+0.5 + v ;
+    grad = length(vec2(dFdx(f),dFdy(f)));
+    d = uEdge*grad;
+    edgeFactor = smoothstep(-d, d, f);
+    finalColor = mix(blue, finalColor, edgeFactor);
+
+    u = fract(vUv.x * uScale)-0.5;
+    v = fract(vUv.y * uScale);
+    f = u*u + v*v - 0.25;
+    grad = length(vec2(dFdx(f),dFdy(f)));
+    d = uEdge*grad;
+    edgeFactor = smoothstep(-d, d, f);
+    if(v>0.0&&v<0.5) finalColor = mix(yellow, finalColor, edgeFactor);
+
+    // bottom right big circle blue part
+    u = fract(vUv.x * uScale)-0.5;
+    v = fract(vUv.y * uScale);
+    f = u*u + v*v - 0.25;
+    grad = length(vec2(dFdx(f),dFdy(f)));
+    d = uEdge*grad;
+    edgeFactor = smoothstep(-d, d, f);
+    if(v>u && v>0.0 && v<0.5 && u>0.0){finalColor = mix(blue, finalColor, edgeFactor);}
+
+    // top small circle both sides depending on u
+    u = fract(vUv.x * uScale)-0.5;
+    v = fract(vUv.y * uScale)-0.75;
+    f = u*u + v*v - 0.015;
+    grad = length(vec2(dFdx(f),dFdy(f)));
+    d = uEdge*grad;
+    edgeFactor = smoothstep(-d, d, f);
+    if(u > 0.001){finalColor = mix(yellow, finalColor, edgeFactor);}
+    //} else {finalColor = mix(blue, finalColor, edgeFactor);}
+
+    // top small circle both sides depending on u
+    u = fract(vUv.x * uScale)-0.5;
+    v = fract(vUv.y * uScale)-0.75;
+    f = u*u + v*v - 0.015;
+    grad = length(vec2(dFdx(f),dFdy(f)));
+    d = uEdge*grad;
+    edgeFactor = smoothstep(-d, d, f);
+    if(u < 0.0001){finalColor = mix(blue, finalColor, edgeFactor);}
+
+    gl_FragColor = vec4(finalColor, 1.0);
+
+    if(vPosition.y >= -1.5 && vPosition.y<3.0
+        && vPosition.x <18.15 && vPosition.x >-18.15) {
+    gl_FragColor = vec4(finalColor + color, 1.0);
+    }
+    else {
+        gl_FragColor = vec4(color, 1.0);
+    }
+	}
+
+
+
+</script>
+
+<script type="x-shader/x-vertex" id="teapotFragmentShaderPlane">
+	precision mediump float;
+
+	uniform float uScale;
+	uniform float uEdge;
+
+	varying vec3 vPosition;
+	varying vec3 vPosInCamera;
+	varying vec3 vNormal;
+	varying vec2 vUv;
+	uniform float uDirX, uDirY, uShininess;
+    #extension GL_OES_standard_derivatives : enable
+
+	void main() {
+
+        vec3 nNormal = normalize(vNormal);
+
+		vec3 ambColor = vec3(0.1,0.1,0.1);
+      	vec3 diffColor = vec3(0.6,0.6,0.6);
+		vec3 specColor = vec3(0.4,0.4,0.3);
+
+		vec3 lightDir = normalize(vec3(uDirX,uDirY,1.0));
+		float diffLightWeight = max(dot(nNormal,lightDir),0.0);
+        vec3 eyeDir = normalize(-vPosInCamera);
+        vec3 reflDir = -reflect(lightDir, nNormal);
+        float specLightWeight = pow(max(dot(reflDir, eyeDir), 0.0), uShininess);
+		vec3 lightWeight = ambColor + diffColor * diffLightWeight
+			+ specColor * specLightWeight;
+	    vec3 color = lightWeight;
+
+    vec3 blue = vec3(0.0,0.0,0.9);
+    vec3 yellow = vec3(1,1,0);
+
+    float u = fract(vUv.x * uScale);
+    float v = fract(vUv.y * uScale);
+    float f = u*(u-0.5)*(u-1.0)*v*(v-0.5)*(v-1.0);
+    float grad = length(vec2(dFdx(f),dFdy(f)));
+    float d = uEdge*grad;
+    float edgeFactor = smoothstep(-d, d, f);
+    vec3 finalColor = mix(yellow,blue,edgeFactor);
+
+    u = fract(vUv.x * uScale)-0.5;
+    v = fract(vUv.y * uScale)-0.5;
+    if(u >= v) f = (u - 0.5) * u * (u-1.0);
+    else f = v * (v-0.5) * (v-1.0);
+    grad = length(vec2(dFdx(f),dFdy(f)));
+    d = uEdge*grad;
+    edgeFactor = smoothstep(-d, d, f);
+    finalColor = mix(blue, finalColor, edgeFactor);
+
+    // right bottom blue outter circle
+    u = fract(vUv.x * uScale)-0.5;
+    v = fract(vUv.y * uScale)-1.0;
+    if(v>0.5 || u<0.5){f = -u * -(u*0.5)*-(u-1.0);}
+    grad = length(vec2(dFdx(f),dFdy(f)));
+    d = uEdge*grad;
+    edgeFactor = smoothstep(-d, d, f);
+    finalColor = mix(yellow, finalColor, edgeFactor);
+
+    u = fract(vUv.x * uScale)-0.5;
+    v = fract(vUv.y * uScale)-0.5;
+    if(v<0.5 && u>0.0) {f = -v*-(v-0.5)*-(v-1.0);}
+    grad = length(vec2(dFdx(f),dFdy(f)));
+    d = uEdge*grad;
+    edgeFactor = smoothstep(-d, d, f);
+    finalColor = mix(blue, finalColor, edgeFactor);
+
+    u = fract(vUv.x * uScale);
+    v = fract(vUv.y * uScale);
+    f = -u+0.5 + v ;
+    grad = length(vec2(dFdx(f),dFdy(f)));
+    d = uEdge*grad;
+    edgeFactor = smoothstep(-d, d, f);
+    finalColor = mix(blue, finalColor, edgeFactor);
+
+    //bottom big yellow circle
+    u = fract(vUv.x * uScale)-0.5;
+    v = fract(vUv.y * uScale);
+    f = u*u + v*v - 0.25;
+    grad = length(vec2(dFdx(f),dFdy(f)));
+    d = uEdge*grad;
+    edgeFactor = smoothstep(-d, d, f);
+    if(v>0.0&&v<0.5) finalColor = mix(yellow, finalColor, edgeFactor);
+
+    // bottom right big circle blue part
+    u = fract(vUv.x * uScale)-0.5;
+    v = fract(vUv.y * uScale);
+    f = u*u + v*v - 0.25;
+    grad = length(vec2(dFdx(f),dFdy(f)));
+    d = uEdge*grad;
+    edgeFactor = smoothstep(-d, d, f);
+    if(v>u && v>0.0 && v<0.5 && u>0.0){finalColor = mix(blue, finalColor, edgeFactor);}
+
+
+    // top small circle both sides depending on u
+    u = fract(vUv.x * uScale)-0.5;
+    v = fract(vUv.y * uScale)-0.75;
+    f = u*u + v*v - 0.015;
+    grad = length(vec2(dFdx(f),dFdy(f)));
+    d = uEdge*grad;
+    edgeFactor = smoothstep(-d, d, f);
+    if(u > 0.001){finalColor = mix(yellow, finalColor, edgeFactor);}
+    //} else {finalColor = mix(blue, finalColor, edgeFactor);}
+
+    // top small circle both sides depending on u
+    u = fract(vUv.x * uScale)-0.5;
+    v = fract(vUv.y * uScale)-0.75;
+    f = u*u + v*v - 0.015;
+    grad = length(vec2(dFdx(f),dFdy(f)));
+    d = uEdge*grad;
+    edgeFactor = smoothstep(-d, d, f);
+    if(u < 0.0001){finalColor = mix(blue, finalColor, edgeFactor);}
+
+    gl_FragColor = vec4(finalColor, 1.0);
+
+	}
+
+
+
+</script>
+
+<script type="text/javascript" id="mainCode">
+
+    var
+        control,
+        container,
+        renderer,
+        scene,
+        camera,
+        mesh,
+        start = Date.now(),
+        fov = 30;
+
+    window.addEventListener('load', function () {
+
+        container = document.getElementById("container");
+
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera(
+            fov,
+            window.innerWidth / window.innerHeight,
+            1,
+            10000);
+        camera.position.z = 100;
+        camera.target = new THREE.Vector3(0, 0, 0);
+
+        scene.add(camera);
+
+        teapotMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                uDirX: {type: 'f', value: 0.0},
+                uDirY: {type: 'f', value: 0.0},
+                uShininess: {type: 'f', value: 30.0},
+                uScale: {type: 'f', value: 8.0},
+                uEdge: {type: 'f', value: 0.0},
+                redColor: {type: 'f', value: 0.4},
+                greenColor: {type: 'f', value: 0.4},
+                blueColor: {type: 'f', value: 0.3},
+                // shininess: {type: 'f', value: 0.5}
+            },
+            vertexShader: document.getElementById('teapotVertexShader').textContent,
+            fragmentShader: document.getElementById('teapotFragmentShader').textContent
+        });
+
+        var teapotSize = 15;
+        var segments = 20;
+        geo = new THREE.TeapotGeometry(teapotSize, segments, true, true, true, true, true);
+        console.log("Teapot geometry", geo)
+        mesh = new THREE.Mesh(geo, teapotMaterial);
+        scene.add(mesh);
+
+        teapotMaterialPlane = new THREE.ShaderMaterial({
+            uniforms: {
+                uDirX: {type: 'f', value: 0.0},
+                uDirY: {type: 'f', value: 0.0},
+                uShininess: {type: 'f', value: 30.0},
+                uScale: {type: 'f', value: 8.0},
+                uEdge: {type: 'f', value: 0.0}
+            },
+            vertexShader: document.getElementById('teapotVertexShader').textContent,
+            fragmentShader: document.getElementById('teapotFragmentShaderPlane').textContent
+        });
+
+        var geo = new THREE.PlaneGeometry(30, 30, 20, 20);
+        mesh = new THREE.Mesh(geo, teapotMaterialPlane);
+        mesh.position.x = 50;
+        scene.add(mesh);
+
+
+        var axes = new THREE.AxisHelper(20);
+        scene.add(axes);
+
+        control = new function () {
+            this.dirX = 0.5;
+            this.dirY = 0.0;
+            this.shin = 30.0;
+            this.scale = 6.0;
+            this.edge = 0.0;
+            this.redColor = 0.4;
+            this.greenColor = 0.4;
+            this.blueColor = 0.3;
+            // this.shininess = 0.5;
+        }
+        var gui = new dat.GUI();
+        gui.add(control, 'dirX', -1.0, 1.0, 0.5);
+        gui.add(control, 'dirY', -1.0, 1.0, 0.0);
+        gui.add(control, 'shin', 1.0, 60.0, 30.0);
+        gui.add(control, 'scale', 1.0, 10.0);
+        gui.add(control, 'edge', 0.0, 10.0);
+        gui.add(control, 'redColor', 0.0, 1.0);
+        gui.add(control, 'greenColor', 0.0, 1.0);
+        gui.add(control, 'blueColor', 0.0, 1.0);
+        // gui.add(control, 'shininess', 0.0, 1.0);
+
+        renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        container.appendChild(renderer.domElement);
+        controls = new THREE.TrackballControls(camera, renderer.domElement);
+        render();
+
+    });
+
+    function render() {
+        teapotMaterial.uniforms.uDirX.value = control.dirX;
+        teapotMaterial.uniforms.uDirY.value = control.dirY;
+        teapotMaterial.uniforms.uShininess.value = control.shin;
+        teapotMaterial.uniforms.uScale.value = control.scale;
+        teapotMaterial.uniforms.uEdge.value = control.edge;
+        teapotMaterial.uniforms.redColor.value = control.redColor;
+        teapotMaterial.uniforms.greenColor.value = control.greenColor;
+        teapotMaterial.uniforms.blueColor.value = control.blueColor;
+        // teapotMaterial.uniforms.shininess.value = control.shininess;
+
+        teapotMaterialPlane.uniforms.uDirX.value = control.dirX;
+        teapotMaterialPlane.uniforms.uDirY.value = control.dirY;
+        teapotMaterialPlane.uniforms.uShininess.value = control.shin;
+        teapotMaterialPlane.uniforms.uScale.value = control.scale;
+        teapotMaterialPlane.uniforms.uEdge.value = control.edge;
+
+        // render
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+        controls.update();
+    }
+
+</script>
+
+</html>
+
