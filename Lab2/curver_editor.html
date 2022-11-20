@@ -1,0 +1,145 @@
+<!-- saved from url=(0058)https://klevas.mif.vu.lt/~rimask/canvas/curve_edit_ex.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+  <script type="application/javascript">
+
+    function draw() {
+      var canvas = document.getElementById('canvas');
+      if (canvas.getContext) {
+        var ctx = canvas.getContext("2d");
+// image
+        var imageObj = new Image();
+        imageObj.src = 'king.jpg';
+
+// Initial data
+        var NUM = 20;
+        var i = NUM/2;
+        var x0 = 20;
+        var x1 = 450;
+        var dx = (x1-x0)/NUM;
+        var y0 = 20;
+        var y1 = 490;
+        var x = new Array(
+                35,37,  39, 50, 60, 70, 80, 85, 90, 95, 98, 150, 152, 186,
+                230, 274, 318, 362, 406, 450
+        );
+        var y = new Array(
+                35,37,  39, 50, 60, 70, 80, 85, 90, 95, 98, 150, 152, 186,
+                230, 274, 318, 362, 406, 450
+        );
+// Draw
+        redraw();
+// key events
+        window.addEventListener('keydown'  , function(evt) {
+          var key=evt.keyCode;
+          var di = 1;
+          var dx = 5;
+          var dy = 5;
+          if (evt.shiftKey) {
+            dx = 1;
+            dy = 1;
+          }
+          switch(key) {
+            case 34: // page down
+              if (i > 0) i -= di;
+              redraw();
+              break;
+            case 33: // page up
+              if (i < NUM-1) i += di;
+              redraw();
+              break;
+
+            case 39: // right arrow
+              if (x[i] < x1) x[i] += dx;
+              redraw();
+              break;
+
+            case 37: // left arrow
+              if (x[i] > x0) x[i] -= dx;
+              redraw();
+              break;
+
+            case 38: // up arrow
+              if (y[i] > y0) y[i] -= dy;
+              redraw();
+              break;
+
+            case 40: // down arrow
+              if (y[i] < y1) y[i] += dy;
+              redraw();
+              break;
+
+            case 13: // enter
+              console.log("x = ");
+              for(var j = 0; j < NUM; j+=5){
+                console.log("%d, %d, %d, %d, %d,",
+                        x[j],x[j+1],x[j+2],x[j+3],x[j+4]);
+              }
+              console.log("y = ");
+              for(var j = 0; j < NUM; j+=5){
+                console.log("%d, %d, %d, %d, %d,",
+                        y[j],y[j+1],y[j+2],y[j+3],y[j+4]);
+              }
+              //redraw();
+              break;
+          }
+          return false;
+        }, false); // end key events
+
+      }
+
+// draw border
+      function drawBorder() {
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.lineTo(500,0);
+        ctx.lineTo(500,500);
+        ctx.lineTo(0,500);
+        ctx.closePath();
+        ctx.stroke();
+      }
+
+      function disk(x,y,r) {
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI*2, true);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+// Redraw
+      function redraw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBorder();
+        ctx.drawImage(imageObj, 5, 5, 400, 500);
+        ctx.strokeStyle = "rgb(0, 255, 0)"
+        ctx.beginPath();
+        ctx.moveTo(x[0],y[0]);
+        ctx.bezierCurveTo(x[1],y[1],x[2],y[2],x[3],y[3]);
+        for(var j = 4; j < NUM; j++){
+          ctx.lineTo(x[j],y[j]);
+        }
+        ctx.stroke();
+        for(var j = 0; j < NUM; j++){
+          if(i==j) {ctx.fillStyle = "rgba(255, 0, 0, .7)";}
+          else {ctx.fillStyle = "rgb(0, 255, 0)";}
+          disk(x[j],y[j],3);
+        }
+      }
+    }
+  </script>
+</head>
+
+<body onload="draw();">
+<h1>Curve Editor</h1>
+
+<canvas id="canvas" width="500" height="500"></canvas>
+<ul>
+  <li>
+    PageDown/Up - choose point in the list (marked in red)
+  </li><li>
+  Arrows - move the red point
+</li><li>
+  Enter - output (x,y) coordinates of points to the console.
+</li></ul>
+<break>
+
+</break></body></html>
