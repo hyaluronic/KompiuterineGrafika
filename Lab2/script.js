@@ -37,7 +37,7 @@ $(function () {
     scene.add(helper);
 
     // add subtle ambient lighting
-    const ambientLight = new THREE.AmbientLight(0x292929, 0.5);
+    const ambientLight = new THREE.AmbientLight(0x404040);
     scene.add(ambientLight);
 
     // add the output of the renderer to the html element
@@ -78,7 +78,7 @@ $(function () {
         camControl.update();
 
         if (spin) {
-            plane.rotation.z += .01;
+            plane.rotation.y += .01;
             boardGroup.rotation.y += .01;
         }
 
@@ -195,7 +195,7 @@ $(function () {
         let colors = [0xFFFFFF, 0x000000]
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
-                const square = createPlaneSquare(colors[(i + j) % 2])
+                const square = createPlaneSquare(colors[(i + j + 1) % 2])
                 console.log(colors[(i + j) % 2 === 0])
                 let x = -67
                 let z = 64
@@ -236,7 +236,7 @@ $(function () {
             }
         }
 
-        const kingColumns = ["D1", "E8"]
+        const kingColumns = ["E1", "D8"]
 
         for (let i = 0; i < 2; i++) {
             for (let j = 0; j < 1; j++) {
@@ -247,7 +247,7 @@ $(function () {
             }
         }
 
-        const queenColumns = ["E1", "D8"]
+        const queenColumns = ["D1", "E8"]
 
         for (let i = 0; i < 2; i++) {
             for (let j = 0; j < 1; j++) {
