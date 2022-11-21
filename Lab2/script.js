@@ -2,8 +2,6 @@
 $(function () {
     const stats = initStats();
 
-    //TODO: blizgios medziagos
-
     // create a scene, that will hold all our elements such as objects, cameras and lights.
     const scene = new THREE.Scene();
 
@@ -86,18 +84,18 @@ $(function () {
         renderer.render(scene, camera);
     }
 
-    function createChessFigureMesh(color) {
+    function createKing(color) {
         const pointsX = [
-            251, 202, 214, 225, 210,
-            200, 225, 225, 220, 215,
-            208, 205, 197, 186, 190,
-            169, 168, 172, 161, 160, 251
+            251, 202, 214, 225, 215, 215,
+            210, 210, 224, 225, 220, 214,
+            205, 203, 196, 184, 189, 169,
+            168, 172, 161, 161, 250
         ];
         const pointsY = [
-            85, 97, 124, 145, 155,
-            175, 180, 205, 235, 265,
-            283, 295, 307, 316, 325,
-            334, 343, 352, 361, 370, 370
+            75, 92, 120, 143, 145, 150,
+            155, 165, 170, 205, 235, 265,
+            283, 295, 307, 316, 325, 334,
+            343, 357, 361, 375, 375
         ];
         const points = [];
         for (let i = 0; i < pointsX.length; i++) {
@@ -112,41 +110,40 @@ $(function () {
         const latheMesh = new THREE.Mesh(latheGeometry, meshMaterial);
         latheMesh.castShadow = true;
 
-        const crossYPosition = 13;
+        const crossYPosition = 14.5;
         const crossXPosition = 0;
         const cutYDistance = 1.5;
         const cutXDistance = 1.5;
 
         const crossGeometry = new THREE.BoxGeometry(5, 5, 1);
         const crossMesh = new THREE.Mesh(crossGeometry, meshMaterial);
-        crossMesh.position.y = crossYPosition;
         crossMesh.position.x = crossXPosition;
+        crossMesh.position.y = crossYPosition;
 
         const boxGeometry = new THREE.BoxGeometry(2, 2, 1);
         const topLeftBox = new THREE.Mesh(boxGeometry, meshMaterial);
-        topLeftBox.position.y = crossYPosition + cutYDistance;
         topLeftBox.position.x = crossXPosition - cutXDistance;
+        topLeftBox.position.y = crossYPosition + cutYDistance;
 
         const topRightBox = new THREE.Mesh(boxGeometry, meshMaterial);
-        topRightBox.position.y = crossYPosition + cutYDistance;
         topRightBox.position.x = crossXPosition + cutXDistance;
+        topRightBox.position.y = crossYPosition + cutYDistance;
 
         const bottomLeftBox = new THREE.Mesh(boxGeometry, meshMaterial);
-        bottomLeftBox.position.y = crossYPosition - cutYDistance;
         bottomLeftBox.position.x = crossXPosition - cutXDistance;
+        bottomLeftBox.position.y = crossYPosition - cutYDistance;
 
         const bottomRightBox = new THREE.Mesh(boxGeometry, meshMaterial);
-        bottomRightBox.position.y = crossYPosition - cutYDistance;
         bottomRightBox.position.x = crossXPosition + cutXDistance;
+        bottomRightBox.position.y = crossYPosition - cutYDistance;
 
-        let crossBSP = new ThreeBSP(crossMesh);
-        let topLeftBSP = new ThreeBSP(topLeftBox);
-        let topRightBSP = new ThreeBSP(topRightBox);
-        let bottomLeftBSP = new ThreeBSP(bottomLeftBox);
-        let bottomRightBSP = new ThreeBSP(bottomRightBox);
-        crossBSP = crossBSP.subtract(topLeftBSP).subtract(topRightBSP).subtract(bottomLeftBSP).subtract(bottomRightBSP);
+        let cross = new ThreeBSP(crossMesh)
+            .subtract(new ThreeBSP(topLeftBox))
+            .subtract(new ThreeBSP(topRightBox))
+            .subtract(new ThreeBSP(bottomLeftBox))
+            .subtract(new ThreeBSP(bottomRightBox))
+            .toMesh();
 
-        let cross = crossBSP.toMesh();
         cross.geometry.computeFaceNormals();
         cross.geometry.computeVertexNormals();
         cross.material = meshMaterial;
@@ -161,8 +158,7 @@ $(function () {
         return kingGroup;
     }
 
-    function createPawnBox(color, width, height, depth) {
-        // create box
+    function createBox(color, width, height, depth) {
         const boxGeometry = new THREE.BoxGeometry(width, height, depth);
         const boxMaterial = new THREE.MeshLambertMaterial({color: color});
 
@@ -172,16 +168,13 @@ $(function () {
         return box;
     }
 
-    function moveChessPieceOnBoardWithHeight(chessPiece, positionString, y) {
-        moveChessPieceOnBoard(chessPiece, positionString)
+    function moveChessPieceWithHeight(chessPiece, positionString, y) {
+        moveChessPiece(chessPiece, positionString)
         chessPiece.position.y = y;
     }
 
     function createPlaneSquare(color) {
-        const width = 19;
-        const height = 19;
-        const depth = 19;
-        const boxGeometry = new THREE.BoxGeometry(width, height, depth);
+        const boxGeometry = new THREE.BoxGeometry(19, 19, 19);
         const boxMaterial = new THREE.MeshLambertMaterial({color: color});
         const box = new THREE.Mesh(boxGeometry, boxMaterial);
         box.castShadow = true;
@@ -201,7 +194,7 @@ $(function () {
                 let z = 64
                 x = x + (19 * i);
                 z = z - (19 * j);
-                square.position.set(x, -10, z);
+                square.position.set(x, -9, z);
                 group.add(square);
             }
         }
@@ -218,20 +211,20 @@ $(function () {
         for (let i = 0; i < pawnRows.length; i++) {
             for (let j = 0; j < pawnColumns.length; j++) {
                 let position = pawnColumns.charAt(j) + pawnRows[i];
-                const newFigure1 = createPawnBox(colors[i], 9, 3, 9);
-                moveChessPieceOnBoardWithHeight(newFigure1, position, 1.5);
+                const newFigure1 = createBox(colors[i], 9, 3, 9);
+                moveChessPieceWithHeight(newFigure1, position, 1.5);
                 group.add(newFigure1)
-                const newFigure2 = createPawnBox(colors[i], 7, 5, 7);
-                moveChessPieceOnBoardWithHeight(newFigure2, position, 2.5);
+                const newFigure2 = createBox(colors[i], 7, 5, 7);
+                moveChessPieceWithHeight(newFigure2, position, 2.5);
                 group.add(newFigure2)
-                const newFigure3 = createPawnBox(colors[i], 4, 9, 4);
-                moveChessPieceOnBoardWithHeight(newFigure3, position, 4.5);
+                const newFigure3 = createBox(colors[i], 4, 9, 4);
+                moveChessPieceWithHeight(newFigure3, position, 4.5);
                 group.add(newFigure3)
-                const newFigure4 = createPawnBox(colors[i], 2, 12, 2);
-                moveChessPieceOnBoardWithHeight(newFigure4, position, 6);
+                const newFigure4 = createBox(colors[i], 2, 12, 2);
+                moveChessPieceWithHeight(newFigure4, position, 6);
                 group.add(newFigure4)
-                const newFigure5 = createPawnBox(colors[i], 4, 3, 4);
-                moveChessPieceOnBoardWithHeight(newFigure5, position, 1.5 + 12);
+                const newFigure5 = createBox(colors[i], 4, 3, 4);
+                moveChessPieceWithHeight(newFigure5, position, 1.5 + 12);
                 group.add(newFigure5)
             }
         }
@@ -241,8 +234,8 @@ $(function () {
         for (let i = 0; i < 2; i++) {
             for (let j = 0; j < 1; j++) {
                 let position = kingColumns[(i + j) % 2];
-                const newFigure = createChessFigureMesh(colors[i]);
-                moveChessPieceOnBoard(newFigure, position);
+                const newFigure = createKing(colors[i]);
+                moveChessPiece(newFigure, position);
                 group.add(newFigure)
             }
         }
@@ -252,29 +245,29 @@ $(function () {
         for (let i = 0; i < 2; i++) {
             for (let j = 0; j < 1; j++) {
                 let position = queenColumns[(i + j) % 2];
-                const newFigure1 = createPawnBox(colors[i], 9, 3, 9);
-                moveChessPieceOnBoardWithHeight(newFigure1, position, newFigure1.geometry.parameters.height / 2);
+                const newFigure1 = createBox(colors[i], 9, 3, 9);
+                moveChessPieceWithHeight(newFigure1, position, newFigure1.geometry.parameters.height / 2);
                 group.add(newFigure1)
-                const newFigure2 = createPawnBox(colors[i], 8, 5, 8);
-                moveChessPieceOnBoardWithHeight(newFigure2, position, newFigure2.geometry.parameters.height / 2);
+                const newFigure2 = createBox(colors[i], 8, 5, 8);
+                moveChessPieceWithHeight(newFigure2, position, newFigure2.geometry.parameters.height / 2);
                 group.add(newFigure2)
-                const newFigure3 = createPawnBox(colors[i], 9, 3, 9);
-                moveChessPieceOnBoardWithHeight(newFigure3, position, newFigure3.geometry.parameters.height / 2 + 5);
+                const newFigure3 = createBox(colors[i], 9, 3, 9);
+                moveChessPieceWithHeight(newFigure3, position, newFigure3.geometry.parameters.height / 2 + 5);
                 group.add(newFigure3)
-                const newFigure4 = createPawnBox(colors[i], 8, 8, 8);
-                moveChessPieceOnBoardWithHeight(newFigure4, position, newFigure4.geometry.parameters.height / 2);
+                const newFigure4 = createBox(colors[i], 8, 8, 8);
+                moveChessPieceWithHeight(newFigure4, position, newFigure4.geometry.parameters.height / 2);
                 group.add(newFigure4)
-                const newFigure5 = createPawnBox(colors[i], 5, 18, 5);
-                moveChessPieceOnBoardWithHeight(newFigure5, position, newFigure5.geometry.parameters.height / 2);
+                const newFigure5 = createBox(colors[i], 5, 18, 5);
+                moveChessPieceWithHeight(newFigure5, position, newFigure5.geometry.parameters.height / 2);
                 group.add(newFigure5)
-                const newFigure6 = createPawnBox(colors[i], 4, 23, 4);
-                moveChessPieceOnBoardWithHeight(newFigure6, position, newFigure6.geometry.parameters.height / 2);
+                const newFigure6 = createBox(colors[i], 4, 23, 4);
+                moveChessPieceWithHeight(newFigure6, position, newFigure6.geometry.parameters.height / 2);
                 group.add(newFigure6)
-                const newFigure7 = createPawnBox(colors[i], 7, 5, 7);
-                moveChessPieceOnBoardWithHeight(newFigure7, position, newFigure7.geometry.parameters.height / 2 + 23);
+                const newFigure7 = createBox(colors[i], 7, 5, 7);
+                moveChessPieceWithHeight(newFigure7, position, newFigure7.geometry.parameters.height / 2 + 23);
                 group.add(newFigure7)
-                const newFigure8 = createPawnBox(colors[i], 6, 3, 6);
-                moveChessPieceOnBoardWithHeight(newFigure8, position, newFigure8.geometry.parameters.height / 2 + 28);
+                const newFigure8 = createBox(colors[i], 6, 3, 6);
+                moveChessPieceWithHeight(newFigure8, position, newFigure8.geometry.parameters.height / 2 + 28);
                 group.add(newFigure8)
             }
         }
@@ -282,26 +275,26 @@ $(function () {
         const rookColumns = 'CF'
         const rookRows = [1, 8]
 
-        for (let i = 0; i < rookColumns.length; i++) {
-            for (let j = 0; j < rookRows.length; j++) {
+        for (let i = 0; i < rookRows.length; i++) {
+            for (let j = 0; j < rookColumns.length; j++) {
                 let position = rookColumns.charAt(j) + rookRows[i];
-                const newFigure1 = createPawnBox(colors[i], 9, 3, 9);
-                moveChessPieceOnBoardWithHeight(newFigure1, position, newFigure1.geometry.parameters.height / 2);
+                const newFigure1 = createBox(colors[i], 9, 3, 9);
+                moveChessPieceWithHeight(newFigure1, position, newFigure1.geometry.parameters.height / 2);
                 group.add(newFigure1)
-                const newFigure2 = createPawnBox(colors[i], 7, 7, 7);
-                moveChessPieceOnBoardWithHeight(newFigure2, position, newFigure2.geometry.parameters.height / 2);
+                const newFigure2 = createBox(colors[i], 7, 7, 7);
+                moveChessPieceWithHeight(newFigure2, position, newFigure2.geometry.parameters.height / 2);
                 group.add(newFigure2)
-                const newFigure3 = createPawnBox(colors[i], 4, 13, 4);
-                moveChessPieceOnBoardWithHeight(newFigure3, position, newFigure3.geometry.parameters.height / 2);
+                const newFigure3 = createBox(colors[i], 4, 13, 4);
+                moveChessPieceWithHeight(newFigure3, position, newFigure3.geometry.parameters.height / 2);
                 group.add(newFigure3)
-                const newFigure4 = createPawnBox(colors[i], 3, 19, 3);
-                moveChessPieceOnBoardWithHeight(newFigure4, position, newFigure4.geometry.parameters.height / 2);
+                const newFigure4 = createBox(colors[i], 3, 19, 3);
+                moveChessPieceWithHeight(newFigure4, position, newFigure4.geometry.parameters.height / 2);
                 group.add(newFigure4)
-                const newFigure5 = createPawnBox(colors[i], 4, 4, 4);
-                moveChessPieceOnBoardWithHeight(newFigure5, position, newFigure5.geometry.parameters.height / 2 + 19);
+                const newFigure5 = createBox(colors[i], 4, 4, 4);
+                moveChessPieceWithHeight(newFigure5, position, newFigure5.geometry.parameters.height / 2 + 19);
                 group.add(newFigure5)
-                const newFigure6 = createPawnBox(colors[i], 2, 25, 2);
-                moveChessPieceOnBoardWithHeight(newFigure6, position, newFigure6.geometry.parameters.height / 2);
+                const newFigure6 = createBox(colors[i], 2, 25, 2);
+                moveChessPieceWithHeight(newFigure6, position, newFigure6.geometry.parameters.height / 2);
                 group.add(newFigure6)
             }
         }
@@ -309,23 +302,23 @@ $(function () {
         const horseColumns = 'BG'
         const horseRows = [1, 8]
 
-        for (let i = 0; i < horseColumns.length; i++) {
-            for (let j = 0; j < horseRows.length; j++) {
+        for (let i = 0; i < horseRows.length; i++) {
+            for (let j = 0; j < horseColumns.length; j++) {
                 let position = horseColumns.charAt(j) + horseRows[i];
-                const newFigure1 = createPawnBox(colors[i], 9, 3, 9);
-                moveChessPieceOnBoardWithHeight(newFigure1, position, newFigure1.geometry.parameters.height / 2);
+                const newFigure1 = createBox(colors[i], 9, 3, 9);
+                moveChessPieceWithHeight(newFigure1, position, newFigure1.geometry.parameters.height / 2);
                 group.add(newFigure1)
-                const newFigure3 = createPawnBox(colors[i], 9, 3, 9);
-                moveChessPieceOnBoardWithHeight(newFigure3, position, newFigure3.geometry.parameters.height / 2 + 6);
+                const newFigure3 = createBox(colors[i], 9, 3, 9);
+                moveChessPieceWithHeight(newFigure3, position, newFigure3.geometry.parameters.height / 2 + 6);
                 group.add(newFigure3)
-                const newFigure4 = createPawnBox(colors[i], 8, 12, 8);
-                moveChessPieceOnBoardWithHeight(newFigure4, position, newFigure4.geometry.parameters.height / 2);
+                const newFigure4 = createBox(colors[i], 8, 12, 8);
+                moveChessPieceWithHeight(newFigure4, position, newFigure4.geometry.parameters.height / 2);
                 group.add(newFigure4)
-                const newFigure5 = createPawnBox(colors[i], 7, 23, 7);
-                moveChessPieceOnBoardWithHeight(newFigure5, position, newFigure5.geometry.parameters.height / 2);
+                const newFigure5 = createBox(colors[i], 7, 23, 7);
+                moveChessPieceWithHeight(newFigure5, position, newFigure5.geometry.parameters.height / 2);
                 group.add(newFigure5)
-                const newFigure6 = createPawnBox(colors[i], 7, 6, 14);
-                moveChessPieceOnBoardWithHeight(newFigure6, position, 23 - 5);
+                const newFigure6 = createBox(colors[i], 7, 6, 14);
+                moveChessPieceWithHeight(newFigure6, position, 23 - 5);
                 newFigure6.position.z -= (2 * (-1)**(i % 2));
                 group.add(newFigure6)
             }
@@ -334,33 +327,30 @@ $(function () {
         const towerColumns = 'AH'
         const towerRows = [1, 8]
 
-        for (let i = 0; i < towerColumns.length; i++) {
-            for (let j = 0; j < towerRows.length; j++) {
+        for (let i = 0; i < towerRows.length; i++) {
+            for (let j = 0; j < towerColumns.length; j++) {
                 let position = towerColumns.charAt(j) + towerRows[i];
-                const newFigure1 = createPawnBox(colors[i], 9, 3, 9);
-                moveChessPieceOnBoardWithHeight(newFigure1, position, newFigure1.geometry.parameters.height / 2);
+                const newFigure1 = createBox(colors[i], 9, 3, 9);
+                moveChessPieceWithHeight(newFigure1, position, newFigure1.geometry.parameters.height / 2);
                 group.add(newFigure1)
-                const newFigure3 = createPawnBox(colors[i], 9, 3, 9);
-                moveChessPieceOnBoardWithHeight(newFigure3, position, newFigure3.geometry.parameters.height / 2 + 6);
+                const newFigure3 = createBox(colors[i], 9, 3, 9);
+                moveChessPieceWithHeight(newFigure3, position, newFigure3.geometry.parameters.height / 2 + 6);
                 group.add(newFigure3)
-                const newFigure4 = createPawnBox(colors[i], 8, 12, 8);
-                moveChessPieceOnBoardWithHeight(newFigure4, position, newFigure4.geometry.parameters.height / 2);
+                const newFigure4 = createBox(colors[i], 8, 12, 8);
+                moveChessPieceWithHeight(newFigure4, position, newFigure4.geometry.parameters.height / 2);
                 group.add(newFigure4)
-                const newFigure5 = createPawnBox(colors[i], 7, 17, 7);
-                moveChessPieceOnBoardWithHeight(newFigure5, position, newFigure5.geometry.parameters.height / 2);
+                const newFigure5 = createBox(colors[i], 7, 17, 7);
+                moveChessPieceWithHeight(newFigure5, position, newFigure5.geometry.parameters.height / 2);
                 group.add(newFigure5)
-                const newFigure6 = createPawnBox(colors[i], 8, 3, 8);
-                moveChessPieceOnBoardWithHeight(newFigure6, position, newFigure6.geometry.parameters.height / 2 + 17);
+                const newFigure6 = createBox(colors[i], 8, 3, 8);
+                moveChessPieceWithHeight(newFigure6, position, newFigure6.geometry.parameters.height / 2 + 17);
                 group.add(newFigure6)
             }
         }
         return group;
     }
 
-    function moveChessPieceOnBoard(chessPiece, positionString) {
-        if (positionString.length !== 2) {
-            throw new Error("Wrong length passed")
-        }
+    function moveChessPiece(chessPiece, positionString) {
         let x = -67
         let z = 64
         const gap = 19;
