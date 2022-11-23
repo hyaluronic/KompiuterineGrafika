@@ -177,7 +177,6 @@ $(function () {
         const boxGeometry = new THREE.BoxGeometry(19, 19, 19);
         const boxMaterial = new THREE.MeshLambertMaterial({color: color});
         const box = new THREE.Mesh(boxGeometry, boxMaterial);
-        box.castShadow = true;
         box.receiveShadow = true;
         return box;
     }
