@@ -59,7 +59,7 @@ $(function () {
 
         const latheMesh = new THREE.Mesh(latheGeometry, meshMaterials);
 
-        const crossYPosition = 13;
+        const crossYPosition = 14.5;
         const crossXPosition = 0;
         const cutYDistance = 1.5;
         const cutXDistance = 1.5;
@@ -86,21 +86,20 @@ $(function () {
         bottomRightBox.position.y = crossYPosition - cutYDistance;
         bottomRightBox.position.x = crossXPosition + cutXDistance;
 
-        let crossBSP = new ThreeBSP(crossMesh);
-        let topLeftBSP = new ThreeBSP(topLeftBox);
-        let topRightBSP = new ThreeBSP(topRightBox);
-        let bottomLeftBSP = new ThreeBSP(bottomLeftBox);
-        let bottomRightBSP = new ThreeBSP(bottomRightBox);
-        crossBSP = crossBSP.subtract(topLeftBSP).subtract(topRightBSP).subtract(bottomLeftBSP).subtract(bottomRightBSP);
+        let cross = new ThreeBSP(crossMesh)
+            .subtract(new ThreeBSP(topLeftBox))
+            .subtract(new ThreeBSP(topRightBox))
+            .subtract(new ThreeBSP(bottomLeftBox))
+            .subtract(new ThreeBSP(bottomRightBox))
+            .toMesh();
 
-        let cross = crossBSP.toMesh();
         cross.geometry.computeFaceNormals();
         cross.geometry.computeVertexNormals();
-        cross.material = meshMaterials;
+        cross.material = meshMaterial;
 
         latheMesh.geometry.computeFaceNormals();
         latheMesh.geometry.computeVertexNormals();
-        latheMesh.material = meshMaterials;
+        latheMesh.material = meshMaterial;
 
         let kingGroup = new THREE.Group();
         kingGroup.add(cross);
