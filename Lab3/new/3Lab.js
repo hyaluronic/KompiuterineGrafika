@@ -1,6 +1,6 @@
-import * as THREE from "https://unpkg.com/three@0.123.0/build/three.module.js";
-import { OrbitControls } from "https://unpkg.com/three@0.123.0/examples/jsm/controls/OrbitControls.js";
-import { ConvexGeometry } from "https://unpkg.com/three@0.123.0/examples/jsm/geometries/ConvexGeometry.js";
+import * as THREE from "./lib/threeModule.js";
+import {OrbitControls} from "https://unpkg.com/three@0.123.0/examples/jsm/controls/OrbitControls.js";
+import {ConvexGeometry} from "https://unpkg.com/three@0.123.0/examples/jsm/geometries/ConvexGeometry.js";
 import Stats from "https://unpkg.com/three@0.123.0/examples/jsm/libs/stats.module";
 
 const stats = initStats();
@@ -29,98 +29,40 @@ scene.add(ambientLight);
 
 const r = 5;
 const R = 7.5;
-const pointsCount = 10000;
+const pointsCount = 5000;
 
-let generatedPoints = generatePoints(R, r, pointsCount);
+let generatedPoints = generatePoints();
+let [goodPoints, badPoints] = filterPoints();
+const pointsGroup = new THREE.Object3D();
+addPoints(goodPoints,0xff0000);
+addPoints(badPoints,0xd7d8cc);
+scene.add(pointsGroup);
 
-let filteredPoints = filterPoints(R, r, generatedPoints);
-
-const geometry = new ConvexGeometry(filteredPoints);
-
+const geometry = new ConvexGeometry(goodPoints);
+geometry.uvsNeedUpdate = true;
 geometry.faceVertexUvs[0] = [];
-
-const faces = geometry.faces;
-
-let u1, u2, u3;
-const s = 4;
-for (const face of faces) {
-    const v1 = geometry.vertices[face.a],
-        v2 = geometry.vertices[face.b],
-        v3 = geometry.vertices[face.c];
-
-    u1 = calcU(v1.x, v1.z, s);
-    u2 = calcU(v2.x, v2.z, s);
-    u3 = calcU(v3.x, v3.z, s);
-
-    if (u1 > 0.9 * s || u2 > 0.9 * s || u3 > 0.9 * s) {
-        if (u1 < s * 0.8) u1 += s;
-        if (u2 < s * 0.8) u2 += s;
-        if (u3 < s * 0.8) u3 += s;
-    }
+const s = 5;
+let u1, u2, u3, v1, v2, v3;
+for (const face of geometry.faces) {
+    [u1, v1] = calcUV(geometry.vertices[face.a]);
+    [u2, v2] = calcUV(geometry.vertices[face.b]);
+    [u3, v3] = calcUV(geometry.vertices[face.c]);
+    fixU();
 
     geometry.faceVertexUvs[0].push([
-        new THREE.Vector2(u1, calcV(v1.y, r)),
-        new THREE.Vector2(u2, calcV(v2.y, r)),
-        new THREE.Vector2(u3, calcV(v3.y, r)),
+        new THREE.Vector2(u1, v1),
+        new THREE.Vector2(u2, v2),
+        new THREE.Vector2(u3, v3),
     ]);
 }
-geometry.uvsNeedUpdate = true;
 
 const texture = new THREE.TextureLoader().load("textures/texture.jpg");
 texture.wrapS = THREE.RepeatWrapping;
-
-const material = new THREE.MeshBasicMaterial({ map: texture });
-
+const material = new THREE.MeshBasicMaterial({map: texture});
 const mesh = new THREE.Mesh(geometry, material);
 scene.add(mesh);
 
 render();
-
-function render() {
-    stats.update();
-    renderer.render(scene, camera);
-    requestAnimationFrame(render);
-    orbitControls.update();
-}
-
-function generatePoints(R, r, n) {
-    var points = [];
-    for (let i = 0; i < n; i++) {
-        let x = random(-(R + r), R + r);
-        let y = random(-r, r);
-        let z = random(-(R + r), R + r);
-        points.push(new THREE.Vector3(x, y, z));
-    }
-    return points;
-}
-
-function random(min, max) {
-    return Math.random() * (max - min) + min;
-}
-
-function pow2(x) {
-    return Math.pow(x, 2);
-}
-
-function filterPoints(R, r, points) {
-    let a, b;
-    let filteredPoints = [];
-    points.forEach((v) => {
-        a = pow2(pow2(v.x) + pow2(v.y) + pow2(v.z) + pow2(R) - pow2(r));
-        b = 4 * pow2(R) * (pow2(v.x) + pow2(v.z));
-        if (a - b <= 0) filteredPoints.push(v);
-    });
-    return filteredPoints;
-}
-
-function calcU(x, z, s) {
-    let phi = Math.atan2(z, x);
-    return ((phi + Math.PI) / (2 * Math.PI)) * s;
-}
-
-function calcV(y, r) {
-    return Math.asin(y / r) / Math.PI + 1 / 2;
-}
 
 function initStats() {
     const newStats = new Stats();
@@ -134,4 +76,61 @@ function initStats() {
     $("#Stats-output").append(newStats.domElement);
 
     return newStats;
+}
+
+function render() {
+    stats.update();
+    renderer.render(scene, camera);
+    requestAnimationFrame(render);
+    orbitControls.update();
+}
+
+function generatePoints() {
+    let points = [];
+    for (let i = 0; i < pointsCount; i++) {
+        let [x, y, z] = generatePoint();
+        points.push(new THREE.Vector3(x, y, z));
+    }
+    return points;
+}
+
+function generatePoint() {
+    let random = (min, max) => Math.random() * (max - min) + min;
+    return [random(-(R + r), R + r), random(-r, r), random(-(R + r), R + r)]
+}
+
+function filterPoints() {
+    let goodPoints = [];
+    let badPoints = [];
+    generatedPoints.forEach((point) => {
+        if (Math.pow(Math.pow(point.x, 2) + Math.pow(point.y, 2) + Math.pow(point.z, 2) + Math.pow(R, 2) - Math.pow(r, 2), 2)
+            - 4 * Math.pow(R, 2) * (Math.pow(point.x, 2) + Math.pow(point.z, 2)) <= 0) {
+            goodPoints.push(point)
+        } else {
+            badPoints.push(point);
+        }
+    });
+    return [goodPoints, badPoints];
+}
+
+function addPoints(points, color) {
+    points.forEach(function (point) {
+        const pointsMesh = new THREE.Mesh(new THREE.SphereGeometry(0.2), new THREE.MeshBasicMaterial({color: color}));
+        pointsMesh.position.set(point.x, point.y, point.z);
+        pointsGroup.add(pointsMesh);
+    });
+}
+
+function calcUV(vertex) {
+    const u = ((Math.atan2(vertex.z, vertex.x) + Math.PI) / (2 * Math.PI)) * s;
+    const v = Math.asin(vertex.y / r) / Math.PI + 1 / 2;
+    return [u, v];
+}
+
+function fixU() {
+    if (u1 > 0.9 * s || u2 > 0.9 * s || u3 > 0.9 * s) {
+        if (u1 < s * 0.8) u1 += s;
+        if (u2 < s * 0.8) u2 += s;
+        if (u3 < s * 0.8) u3 += s;
+    }
 }
