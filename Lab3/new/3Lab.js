@@ -16,7 +16,6 @@ camera.lookAt(scene.position);
 const renderer = new THREE.WebGLRenderer();
 renderer.setClearColor(0xeeeeee, 1.0);
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
 
 $("#WebGL-output").append(renderer.domElement);
 const orbitControls = new OrbitControls(camera, renderer.domElement);
@@ -29,13 +28,13 @@ scene.add(ambientLight);
 
 const r = 5;
 const R = 7.5;
-const pointsCount = 5000;
+const pointsCount = 10000;
 
 let generatedPoints = generatePoints();
 let [goodPoints, badPoints] = filterPoints();
 const pointsGroup = new THREE.Object3D();
-addPoints(goodPoints,0xff0000);
-addPoints(badPoints,0xd7d8cc);
+addPoints(goodPoints, 0xff0000);
+addPoints(badPoints, 0xd7d8cc);
 scene.add(pointsGroup);
 
 const geometry = new ConvexGeometry(goodPoints);
