@@ -33,8 +33,8 @@ const pointsCount = 10000;
 let generatedPoints = generatePoints();
 let [goodPoints, badPoints] = filterPoints();
 const pointsGroup = new THREE.Object3D();
-addPoints(goodPoints, 0xff0000);
-addPoints(badPoints, 0xd7d8cc);
+// addPoints(goodPoints, 0xff0000);
+// addPoints(badPoints, 0xd7d8cc);
 scene.add(pointsGroup);
 
 const geometry = new ConvexGeometry(goodPoints);
@@ -57,8 +57,11 @@ for (const face of geometry.faces) {
 
 const texture = new THREE.TextureLoader().load("textures/texture.jpg");
 texture.wrapS = THREE.RepeatWrapping;
-const material = new THREE.MeshBasicMaterial({map: texture});
-const mesh = new THREE.Mesh(geometry, material);
+const textureMaterial = new THREE.MeshBasicMaterial({map: texture});
+textureMaterial.side = THREE.DoubleSide;
+const wireFrameMat = new THREE.MeshBasicMaterial({color: 0x1603d3});
+wireFrameMat.wireframe = true;
+const mesh = createMultiMaterialObject(geometry, [textureMaterial/*, wireFrameMat*/]);
 scene.add(mesh);
 
 render();
@@ -132,4 +135,12 @@ function fixU() {
         if (u2 < s * 0.8) u2 += s;
         if (u3 < s * 0.8) u3 += s;
     }
+}
+
+function createMultiMaterialObject(geometry, materials) {
+    var group = new THREE.Group();
+    for (var i = 0, l = materials.length; i < l; i++) {
+        group.add(new THREE.Mesh(geometry, materials[i]));
+    }
+    return group;
 }
