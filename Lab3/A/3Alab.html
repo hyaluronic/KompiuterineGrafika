@@ -108,7 +108,7 @@
         function generatePoints() {
             var points = [];
             var allPoints = [];
-            for (var i = 0; i < 5000; i++) {
+            for (var i = 0; i < 5000; i++) {//TODO: tasku kiekis
                 var x = -15 + Math.random() * 30;
                 var y = -7.5 + Math.random() * 15;
                 var z = -15 + Math.random() * 30;
@@ -133,7 +133,7 @@
                 var spGeom = new THREE.SphereGeometry(0.2);
                 var spMesh = new THREE.Mesh(spGeom, material);
                 spMesh.position = point;
-                // spGroup.add(spMesh);
+                // spGroup.add(spMesh); //ToDO: atkomentuot taskam
             });
 
             //add all randomly generated points
@@ -155,57 +155,9 @@
 
             // hullMesh.rotateX(Math.PI/2)
             scene.add(hullMesh);
-
-            var starimesh = createStair(true);
-
-            // starimesh.rotateY(90*Math.PI/180);
-            // starimesh.rotateZ(180*Math.PI/180);
-            starimesh.rotateZ(180*Math.PI/180);
-            var multiply = new THREE.Vector3().multiply(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1))
-            starimesh.rotateOnAxis(multiply, 90*Math.PI/180 )
-            starimesh.position.y  = 15
-            scene.add(starimesh);
         }
 
-        function createStair(flipStair) {
-
-            var shape = new THREE.Shape();
-            shape.moveTo(0, 0);
-            shape.lineTo(0, 1);
-            shape.bezierCurveTo(0, 1, 2.5, 1, 3, 1.5);
-            shape.bezierCurveTo(3, 1.5, 3.5, 1.75, 6, 2);
-            shape.lineTo(6, 0)
-            shape.lineTo(0, 0)
-            const extrudeSettings = {
-                steps: 2,
-                depth: 0.3,
-                bevelEnabled: false,
-                bevelThickness: 1,
-                bevelSize: 1,
-                bevelOffset: 0,
-                bevelSegments: 1
-            };
-
-            const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-            const mesh = new THREE.Mesh(geometry, material);
-
-            //TO CHANGE IF STAIR IS FLIPPED
-            if (flipStair) {
-                mesh.scale.x *= -1;
-
-            } else {
-                mesh.position.x = -1
-            }
-
-            mesh.position.x = mesh.position.x + 1 / 2
-            mesh.rotateX(Math.PI / 2)
-
-            mesh.scale.y *= -1;
-            return mesh;
-        }
-
-
-        function createMesh(geom) {
+        function createMesh(geometry) {
 
             // assign two materials
             var meshMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00, transparent: true, opacity: 0.2});
@@ -214,33 +166,47 @@
             wireFrameMat.wireframe = true;
 
             const texture = THREE.ImageUtils.loadTexture('textures/texture.jpg');
+            texture.wrapS = THREE.RepeatWrapping;
             const textureMaterial = new THREE.MeshBasicMaterial({map: texture})
 
-            console.log(geom)
+            geometry.faceVertexUvs[0] = [];
 
-            console.log(geom.faceVertexUvs[0])
-            vertices = geom.vertices;
-            console.log(vertices)
-            geom.faceVertexUvs[0].forEach((vertexUvs, index) => {
+            const s = 1;
+            let u1, u2, u3;
+            var faces = geometry.faces;
+            for (var i = 0; i < faces.length; i++) {
+                var v1 = geometry.vertices[faces[i].a],
+                    v2 = geometry.vertices[faces[i].b],
+                    v3 = geometry.vertices[faces[i].c];
 
-                geom.faceVertexUvs[0][index] = []
-                // geom.faceVertexUvs[0][index].push(getUv(vertices, geom.faces[index].a ));
-                // geom.faceVertexUvs[0][index].push(getUv(vertices, geom.faces[index].b ));
-                // geom.faceVertexUvs[0][index].push(getUv(vertices, geom.faces[index].c ));
-                var a = (getUv(vertices, geom.faces[index].a));
-                var b = (getUv(vertices, geom.faces[index].b));
-                var c = (getUv(vertices, geom.faces[index].c));
+                u1 = calcU(v1.x, v1.z, s);
+                u2 = calcU(v2.x, v2.z, s);
+                u3 = calcU(v3.x, v3.z, s);
 
-                // pataisome siule
-                geom.faceVertexUvs[0][index] = fixUvs(a, b, c)
-                // geom.faceVertexUvs[0][index] = [a, b, c]
+                if (u1 > 0.9 * s || u2 > 0.9 * s || u3 > 0.9 * s) {
+                    if (u1 < s * 0.8) u1 += s;
+                    if (u2 < s * 0.8) u2 += s;
+                    if (u3 < s * 0.8) u3 += s;
+                }
 
+                geometry.faceVertexUvs[0].push([
+                    new THREE.Vector2(u1, calcV(v1.y)),
+                    new THREE.Vector2(u2, calcV(v2.y)),
+                    new THREE.Vector2(u3, calcV(v3.y)),
+                ]);
+            }
 
-            })
-            // console.log(geom.faceVertexUvs[0])
+            function calcU(x, z, s) {
+                let phi = Math.atan2(z, x);
+                return ((phi + Math.PI) / (2 * Math.PI)) * s;
+            }
+
+            function calcV(y) {
+                return Math.asin(y / r) / Math.PI + 1 / 2;
+            }
 
             // create a multimaterial
-            var mesh = THREE.SceneUtils.createMultiMaterialObject(geom, [textureMaterial, wireFrameMat]);
+            var mesh = THREE.SceneUtils.createMultiMaterialObject(geometry, [textureMaterial, wireFrameMat]);
 
             return mesh;
         }
@@ -290,20 +256,8 @@
 
         function getUv(vertices, pointIndex) {
             point = vertices[pointIndex];
-            var u = Math.atan2(point.x, point.z) / (2 * Math.PI);
-            var v = Math.atan2(point.y, Math.sqrt(point.x * point.x + point.z * point.z) + R) / Math.PI + 0.5;
-            while (u < 0) {
-                u += 1
-            }
-            while (u > 1) {
-                u -= 1
-            }
-            while (v > 1) {
-                v -= 1
-            }
-            while (v < 0) {
-                v += 1
-            }
+            var u = Math.asin(point.y/r) / Math.PI +1/2;
+            var v = (Math.atan2(point.z, point.x) + Math.PI) / 2 * Math.PI;
             return new THREE.Vector2(u, v);
         }
 
