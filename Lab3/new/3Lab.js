@@ -57,7 +57,7 @@ for (const face of geometry.faces) {
 
 const texture = new THREE.TextureLoader().load("textures/texture.jpg");
 texture.wrapS = THREE.RepeatWrapping;
-const textureMaterial = new THREE.MeshBasicMaterial({map: texture});
+const textureMaterial = new THREE.MeshBasicMaterial({map: texture/*, transparent: true*/});
 textureMaterial.side = THREE.DoubleSide;
 const wireFrameMat = new THREE.MeshBasicMaterial({color: 0x1603d3});
 wireFrameMat.wireframe = true;
@@ -117,7 +117,7 @@ function filterPoints() {
 
 function addPoints(points, color) {
     points.forEach(function (point) {
-        const pointsMesh = new THREE.Mesh(new THREE.SphereGeometry(0.2), new THREE.MeshBasicMaterial({color: color}));
+        const pointsMesh = new THREE.Mesh(new THREE.SphereGeometry(0.09), new THREE.MeshBasicMaterial({color: color}));
         pointsMesh.position.set(point.x, point.y, point.z);
         pointsGroup.add(pointsMesh);
     });
