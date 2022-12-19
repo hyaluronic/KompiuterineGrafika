@@ -24,7 +24,7 @@
 <div id="container"></div>
 </body>
 
-<script type="x-shader/x-vertex" id="teapotVertexShader">
+<script type="x-shader/x-vertex" id="fragmentShader">
 	precision mediump float;
 
 	varying vec3 vPosition;
@@ -57,7 +57,7 @@
 	uniform float uDirX, uDirY, uShininess, shininess;
     #extension GL_OES_standard_derivatives : enable
 
-    vec3 smoothColor(float f, vec3 firstColor, vec3 secondColor) {
+    vec3 mixColor(float f, vec3 firstColor, vec3 secondColor) {
        float grad = length(vec2(dFdx(f),dFdy(f)));
        float d = uEdge*grad;
        float edgeFactor = smoothstep(-d, d, f);
@@ -93,53 +93,53 @@
         float u = fract(vUv.x * uScale);
         float v = fract(vUv.y * uScale);
         float f = u*(u-0.5)*(u-1.0)*v*(v-0.5)*(v-1.0);
-        vec3 finalColor = smoothColor(f,blue,magenta);
+        vec3 finalColor = mixColor(f,blue,magenta);
 
         float downFunction = v + u - 1.0;
         float upFunction = -u + v;
         if (v>0.5 && u>0.5) {
-            finalColor = smoothColor(upFunction, blue, finalColor);
+            finalColor = mixColor(upFunction, blue, finalColor);
         } else if (v<0.5 && u <0.5) {
-            finalColor = smoothColor(-upFunction, blue, finalColor);
+            finalColor = mixColor(-upFunction, blue, finalColor);
         }
         else if (v>0.5 && u<0.5) {
-            finalColor = smoothColor(downFunction, magenta, finalColor);
+            finalColor = mixColor(downFunction, magenta, finalColor);
         }
          else {
-            finalColor = smoothColor(-downFunction, magenta, finalColor);
+            finalColor = mixColor(-downFunction, magenta, finalColor);
         }
 
         // middle circle
         float uMidC = fract(vUv.x * uScale)-0.5;
         float vMidC = fract(vUv.y * uScale)-0.5;
         if ((uMidC>0.0 && vMidC>uMidC) || (vMidC<0.0 && uMidC>0.0 && uMidC>-vMidC) || (vMidC<0.0 && uMidC<0.0 && vMidC<uMidC) || (uMidC<0.0 && vMidC>0.0 && -uMidC>vMidC)) {
-            finalColor = smoothColor(circle(uMidC, vMidC, 0.25), yellow, finalColor);
+            finalColor = mixColor(circle(uMidC, vMidC, 0.25), yellow, finalColor);
         } else {
-            finalColor = smoothColor(circle(uMidC, vMidC, 0.25), cyan, finalColor);
+            finalColor = mixColor(circle(uMidC, vMidC, 0.25), cyan, finalColor);
         }
 
         // top right circle
         float uTopC = fract(vUv.x * uScale)-0.75;
         float vTopC = fract(vUv.y * uScale)-0.75;
         if (vTopC<uTopC) {
-            finalColor = smoothColor(circle(uTopC, vTopC, 0.20), cyan, finalColor);
+            finalColor = mixColor(circle(uTopC, vTopC, 0.20), cyan, finalColor);
         } else if (vTopC>uTopC) {
-            finalColor = smoothColor(circle(uTopC, vTopC, 0.20), yellow, finalColor);
+            finalColor = mixColor(circle(uTopC, vTopC, 0.20), yellow, finalColor);
         }
 
         // no circle
         if (circle(uMidC, vMidC, 0.25) < circle(uTopC, vTopC, 0.20)) {
             if (vTopC<uTopC){
-            finalColor = smoothColor(circle(uTopC, vTopC, 0.20), blue, finalColor);
+            finalColor = mixColor(circle(uTopC, vTopC, 0.20), blue, finalColor);
             } else if (vTopC>uTopC) {
-                finalColor = smoothColor(circle(uTopC, vTopC, 0.20), magenta, finalColor);
+                finalColor = mixColor(circle(uTopC, vTopC, 0.20), magenta, finalColor);
             }
         }
         if (circle(uMidC, vMidC, 0.25) > circle(uTopC, vTopC, 0.20)) {
             if (vTopC<uTopC){
-            finalColor = smoothColor(circle(uMidC, vMidC, 0.25), blue, finalColor);
+            finalColor = mixColor(circle(uMidC, vMidC, 0.25), blue, finalColor);
             } else if (vTopC>uTopC) {
-                finalColor = smoothColor(circle(uMidC, vMidC, 0.25), magenta, finalColor);
+                finalColor = mixColor(circle(uMidC, vMidC, 0.25), magenta, finalColor);
             }
         }
 
@@ -158,7 +158,7 @@
 
 </script>
 
-<script type="x-shader/x-vertex" id="teapotFragmentShaderPlane">
+<script type="x-shader/x-vertex" id="planeFragmentShader">
 	precision mediump float;
 
 	uniform float uScale;
@@ -171,7 +171,7 @@
 	uniform float uDirX, uDirY, uShininess;
     #extension GL_OES_standard_derivatives : enable
 
-    vec3 smoothColor(float f, vec3 firstColor, vec3 secondColor) {
+    vec3 mixColor(float f, vec3 firstColor, vec3 secondColor) {
        float grad = length(vec2(dFdx(f),dFdy(f)));
        float d = uEdge*grad;
        float edgeFactor = smoothstep(-d, d, f);
@@ -208,53 +208,53 @@
         float u = fract(vUv.x * uScale);
         float v = fract(vUv.y * uScale);
         float f = u*(u-0.5)*(u-1.0)*v*(v-0.5)*(v-1.0);
-        vec3 finalColor = smoothColor(f,blue,magenta);
+        vec3 finalColor = mixColor(f,blue,magenta);
 
         float downFunction = v + u - 1.0;
         float upFunction = -u + v;
         if (v>0.5 && u>0.5) {
-            finalColor = smoothColor(upFunction, blue, finalColor);
+            finalColor = mixColor(upFunction, blue, finalColor);
         } else if (v<0.5 && u <0.5) {
-            finalColor = smoothColor(-upFunction, blue, finalColor);
+            finalColor = mixColor(-upFunction, blue, finalColor);
         }
         else if (v>0.5 && u<0.5) {
-            finalColor = smoothColor(downFunction, magenta, finalColor);
+            finalColor = mixColor(downFunction, magenta, finalColor);
         }
          else {
-            finalColor = smoothColor(-downFunction, magenta, finalColor);
+            finalColor = mixColor(-downFunction, magenta, finalColor);
         }
 
         // middle circle
         float uMidC = fract(vUv.x * uScale)-0.5;
         float vMidC = fract(vUv.y * uScale)-0.5;
         if ((uMidC>0.0 && vMidC>uMidC) || (vMidC<0.0 && uMidC>0.0 && uMidC>-vMidC) || (vMidC<0.0 && uMidC<0.0 && vMidC<uMidC) || (uMidC<0.0 && vMidC>0.0 && -uMidC>vMidC)) {
-            finalColor = smoothColor(circle(uMidC, vMidC, 0.25), yellow, finalColor);
+            finalColor = mixColor(circle(uMidC, vMidC, 0.25), yellow, finalColor);
         } else {
-            finalColor = smoothColor(circle(uMidC, vMidC, 0.25), cyan, finalColor);
+            finalColor = mixColor(circle(uMidC, vMidC, 0.25), cyan, finalColor);
         }
 
         // top right circle
         float uTopC = fract(vUv.x * uScale)-0.75;
         float vTopC = fract(vUv.y * uScale)-0.75;
         if (vTopC<uTopC) {
-            finalColor = smoothColor(circle(uTopC, vTopC, 0.20), cyan, finalColor);
+            finalColor = mixColor(circle(uTopC, vTopC, 0.20), cyan, finalColor);
         } else if (vTopC>uTopC) {
-            finalColor = smoothColor(circle(uTopC, vTopC, 0.20), yellow, finalColor);
+            finalColor = mixColor(circle(uTopC, vTopC, 0.20), yellow, finalColor);
         }
 
         // no circle
         if (circle(uMidC, vMidC, 0.25) < circle(uTopC, vTopC, 0.20)) {
             if (vTopC<uTopC){
-            finalColor = smoothColor(circle(uTopC, vTopC, 0.20), blue, finalColor);
+            finalColor = mixColor(circle(uTopC, vTopC, 0.20), blue, finalColor);
             } else if (vTopC>uTopC) {
-                finalColor = smoothColor(circle(uTopC, vTopC, 0.20), magenta, finalColor);
+                finalColor = mixColor(circle(uTopC, vTopC, 0.20), magenta, finalColor);
             }
         }
         if (circle(uMidC, vMidC, 0.25) > circle(uTopC, vTopC, 0.20)) {
             if (vTopC<uTopC){
-            finalColor = smoothColor(circle(uMidC, vMidC, 0.25), blue, finalColor);
+            finalColor = mixColor(circle(uMidC, vMidC, 0.25), blue, finalColor);
             } else if (vTopC>uTopC) {
-                finalColor = smoothColor(circle(uMidC, vMidC, 0.25), magenta, finalColor);
+                finalColor = mixColor(circle(uMidC, vMidC, 0.25), magenta, finalColor);
             }
         }
 
@@ -304,9 +304,8 @@
                 redColor: {type: 'f', value: 0.4},
                 greenColor: {type: 'f', value: 0.4},
                 blueColor: {type: 'f', value: 0.3},
-                // shininess: {type: 'f', value: 0.5}
             },
-            vertexShader: document.getElementById('teapotVertexShader').textContent,
+            vertexShader: document.getElementById('fragmentShader').textContent,
             fragmentShader: document.getElementById('teapotFragmentShader').textContent
         });
 
@@ -325,8 +324,8 @@
                 uScale: {type: 'f', value: 8.0},
                 uEdge: {type: 'f', value: 0.0}
             },
-            vertexShader: document.getElementById('teapotVertexShader').textContent,
-            fragmentShader: document.getElementById('teapotFragmentShaderPlane').textContent
+            vertexShader: document.getElementById('fragmentShader').textContent,
+            fragmentShader: document.getElementById('planeFragmentShader').textContent
         });
 
         var geo = new THREE.PlaneGeometry(30, 30, 20, 20);
@@ -347,7 +346,6 @@
             this.redColor = 0.4;
             this.greenColor = 0.4;
             this.blueColor = 0.3;
-            // this.shininess = 0.5;
         }
         var gui = new dat.GUI();
         gui.add(control, 'dirX', -1.0, 1.0, 0.5);
@@ -358,7 +356,6 @@
         gui.add(control, 'redColor', 0.0, 1.0);
         gui.add(control, 'greenColor', 0.0, 1.0);
         gui.add(control, 'blueColor', 0.0, 1.0);
-        // gui.add(control, 'shininess', 0.0, 1.0);
 
         renderer = new THREE.WebGLRenderer({antialias: true});
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -378,7 +375,6 @@
         teapotMaterial.uniforms.redColor.value = control.redColor;
         teapotMaterial.uniforms.greenColor.value = control.greenColor;
         teapotMaterial.uniforms.blueColor.value = control.blueColor;
-        // teapotMaterial.uniforms.shininess.value = control.shininess;
 
         teapotMaterialPlane.uniforms.uDirX.value = control.dirX;
         teapotMaterialPlane.uniforms.uDirY.value = control.dirY;
