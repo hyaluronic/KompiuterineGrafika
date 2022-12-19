@@ -40,7 +40,6 @@
 	    vPosInCamera = (viewMatrix * modelMatrix * vec4(position, 1.0 )).xyz;
     	gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0 );
 	}
-
 </script>
 
 <script type="x-shader/x-vertex" id="teapotFragmentShader">
@@ -152,10 +151,6 @@
             gl_FragColor = vec4(color, 1.0);
         }
 	}
-
-
-
-
 </script>
 
 <script type="x-shader/x-vertex" id="planeFragmentShader">
@@ -260,14 +255,9 @@
 
         gl_FragColor = vec4(finalColor, 1.0);
 	}
-
-
-
-
 </script>
 
 <script type="text/javascript" id="mainCode">
-
     var
         control,
         container,
@@ -387,7 +377,6 @@
         requestAnimationFrame(render);
         controls.update();
     }
-
 </script>
 
 </html>
