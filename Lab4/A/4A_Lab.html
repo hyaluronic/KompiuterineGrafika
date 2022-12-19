@@ -50,16 +50,16 @@
         perspectiveCamera.position.z = 50;
         perspectiveCamera.lookAt(scene.position);
 
-        const camera2 = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 0.1, 200);
-        camera2.position.x = 100;
-        camera2.position.y = 20;
-        camera2.position.z = -50;
-        camera2.fov = 100;
-        camera2.lookAt(scene.position);
+        const dollyCamera = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 0.1, 200);
+        dollyCamera.position.x = 100;
+        dollyCamera.position.y = 20;
+        dollyCamera.position.z = -50;
+        dollyCamera.fov = 100;
+        dollyCamera.lookAt(scene.position);
 
         const cameraHelperPerspective = new THREE.CameraHelper(perspectiveCamera);
         scene.add(cameraHelperPerspective)
-        const cameraHelperDolly = new THREE.CameraHelper(camera2);
+        const cameraHelperDolly = new THREE.CameraHelper(dollyCamera);
         scene.add(cameraHelperDolly)
 
         // create a render and set the size
@@ -164,9 +164,9 @@
         const cameraModelDolly = createCameraMesh()
 
         cameraModelDolly.rotateY(-Math.PI / 2)
-        cameraModelDolly.position.x = camera2.position.x - 10;
-        cameraModelDolly.position.y = camera2.position.y;
-        cameraModelDolly.position.z = camera2.position.z;
+        cameraModelDolly.position.x = dollyCamera.position.x - 10;
+        cameraModelDolly.position.y = dollyCamera.position.y;
+        cameraModelDolly.position.z = dollyCamera.position.z;
         scene.add(cameraModelDolly)
 
         const camControl = new THREE.TrackballControls(camera, renderer.domElement);
@@ -211,19 +211,19 @@
             }
 
             if (zooming) {
-                if (camera2.position.x < 50) {
+                if (dollyCamera.position.x < 50) {
                     zooming = !zooming;
                 }
-                camera2.position.x -= 0.5;
+                dollyCamera.position.x -= 0.5;
             } else {
-                if (camera2.position.x > 150) {
+                if (dollyCamera.position.x > 150) {
                     zooming = !zooming;
                 }
-                camera2.position.x += 0.5;
+                dollyCamera.position.x += 0.5;
             }
-            cameraModelDolly.position.x = camera2.position.x;
-            cameraModelDolly.position.y = camera2.position.y;
-            cameraModelDolly.position.z = camera2.position.z;
+            cameraModelDolly.position.x = dollyCamera.position.x;
+            cameraModelDolly.position.y = dollyCamera.position.y;
+            cameraModelDolly.position.z = dollyCamera.position.z;
             renderer.render(scene, camera);
 
             if (firstMesh.position.x <= 30 && firstMesh.position.x >= -30) {
@@ -251,35 +251,35 @@
             }
 
             if (zooming) {
-                if (camera2.position.x < 25) {
+                if (dollyCamera.position.x < 25) {
                     zooming = !zooming;
                 }
-                if (camera2.fov < 150) {
-                    camera2.fov += fovDiff /1.8;
+                if (dollyCamera.fov < 150) {
+                    dollyCamera.fov += fovDiff /1.8;
                 }
-                camera2.position.x -= 0.5;
+                dollyCamera.position.x -= 0.5;
             } else {
-                if (camera2.position.x > 150) {
+                if (dollyCamera.position.x > 150) {
                     zooming = !zooming;
                 }
-                if (camera2.fov > 10) {
-                    camera2.fov -= fovDiff /1.8;
+                if (dollyCamera.fov > 10) {
+                    dollyCamera.fov -= fovDiff /1.8;
                 }
-                camera2.position.x += 0.5;
+                dollyCamera.position.x += 0.5;
             }
 
-            camera2.lookAt(new THREE.Vector3(0, 18, -50));
+            dollyCamera.lookAt(new THREE.Vector3(0, 18, -50));
             secondMesh.position = new THREE.Vector3(0, 18, -50);
             if (cameraHelperDollyOff) {
                 scene.add(cameraHelperDolly)
-                renderer.render(scene, camera2);
+                renderer.render(scene, dollyCamera);
             } else {
                 scene.remove(cameraHelperDolly)
             }
 
             camera.updateProjectionMatrix();
             perspectiveCamera.updateProjectionMatrix();
-            camera2.updateProjectionMatrix()
+            dollyCamera.updateProjectionMatrix()
 
             cameraHelperPerspective.update();
             cameraHelperDolly.update();
@@ -296,7 +296,7 @@
             }
             if (dollyViewMode) {
                 scene.remove(cameraModelDolly)
-                renderer.render(scene, camera2);
+                renderer.render(scene, dollyCamera);
             }
         }
 
