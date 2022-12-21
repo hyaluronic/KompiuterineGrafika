@@ -195,20 +195,7 @@
             perspectiveCamera.lookAt(new THREE.Vector3(x, 18, 50));
             firstMesh.position = new THREE.Vector3(x, 18, 50);
 
-            step += 0.01;
-
-            x = 10 + (50 * (Math.sin(step)));
-            // cameraModelPerspective.lookAt(new THREE.Vector3(x, 18, 50))
-            // if (firstMesh.position.x <= 30 && firstMesh.position.x >= -30) {
-            //     cameraModelPerspective.lookAt(firstMesh.position);
-            //     if (cameraModelPerspective.up.y > 0 && cameraModelPerspective.up.z < 1) {
-            //         cameraModelPerspective.up.y -= angleChange
-            //         cameraModelPerspective.up.z += angleChange
-            //     }
-            // } else if (cameraModelPerspective.up.y < 1 && cameraModelPerspective.up.z > 0) {
-            //     cameraModelPerspective.up.y += angleChange
-            //     cameraModelPerspective.up.z -= angleChange
-            // }
+            step += 0.005 ;
 
             if (zooming) {
                 if (dollyCamera.position.x < 50) {
@@ -225,23 +212,6 @@
             cameraModelDolly.position.y = dollyCamera.position.y;
             cameraModelDolly.position.z = dollyCamera.position.z;
             renderer.render(scene, camera);
-
-            // if (firstMesh.position.x <= 30 && firstMesh.position.x >= -30) {
-            //     perspectiveCamera.lookAt(firstMesh.position);
-            //     if (perspectiveCamera.up.y > 0 && perspectiveCamera.up.z < 1) {
-            //         perspectiveCamera.up.y -= angleChange
-            //         perspectiveCamera.up.z += angleChange
-            //     } else {
-            //         perspectiveCamera.up = new THREE.Vector3(0, 0, 1)
-            //     }
-            // } else {
-            //     if (perspectiveCamera.up.y < 1 && perspectiveCamera.up.z > 0) {
-            //         perspectiveCamera.up.y += angleChange
-            //         perspectiveCamera.up.z -= angleChange
-            //     } else {
-            //         // perspectiveCamera.up = new THREE.Vector3(0, 1, 0)
-            //     }
-            // }
 
             perspectiveCamera.lookAt(firstMesh.position);
             cameraModelPerspective.lookAt(firstMesh.position);
