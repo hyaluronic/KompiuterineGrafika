@@ -4,16 +4,17 @@ https://emokymai.vu.lt/mod/book/view.php?id=243354
 2. TIKRAI Bus uždavinys kvaternionų skaičiavimui posukių.
 3. Gali iš WebGL būti klausimas.
 4. Kamera. Kaip į sceną įtraukiam, išmetam objketus.
-5. Šviesos šaltiniai: SpotLight, DirectionLight, AmbientLight, PointLight. Kuom unikalūs, lyginti tarpusavyje esmines savybes (skirtumai, panašumai). Kaip reaguoja į scenos pasikeitimus, pvz į kamerą (keičias apšvieitimas?), į normales.
+5. Šviesos šaltiniai: SpotLight, DirectionLight, AmbientLight, PointLight. Kuom unikalūs, lyginti tarpusavyje esmines savybes (skirtumai, panašumai). Kaip reaguoja į scenos pasikeitimus, pvz į kamerą (keičias apšvieitimas?), į normales. https://www.pluralsight.com/blog/film-games/understanding-different-light-types
 Pvz: PointLight turi lokaciją iš kurios šviečia, o AmbientLight neturi.
 6. Medžiagos: Basic, Normal, Lambert, Phong. Pnš kaip su šviesos šaltiniais.
-7. GALI BŪTI: Bus duota normalė ir nesudėtinga transformacija (pvz. mąstelio keitimas) ir reikės paskaičiuoti kaip normalė pasikeitė. Žinoti kas ta normalė ir jų transformacijas. 
+7. GALIBŪT: Bus duota normalė ir nesudėtinga transformacija (pvz. mąstelio keitimas) ir reikės paskaičiuoti kaip normalė pasikeitė. Žinoti kas ta normalė ir jų transformacijas. 
 8. Normalizacijos kaip skaičiuojamos.
 9. Geometriniai primityvai: plane, circle, shape, sphere, cylinder (kūgis), torus, 5 taisyklingi briaunainiai.
-10. Sudėtinga geometrija: Convex (apvalkalas), Lathe (sukimosi), Extrude.
-Pvz. išdelioti erdvėj taškus ir paklaust koks iškilas apvalkalas dabar bus (kokia figūra, į ką panaši).
+10. Sudėtinga geometrija: Convex (apvalkalas), Lathe (sukimosi), Extrude (storinimas, nuožulnumas).
+GALBŪT: Pvz. išdelioti erdvėj taškus ir paklaust koks iškilas apvalkalas dabar bus (kokia figūra, į ką panaši).
 11. Elementarūs klausimai iš tekstūrų?
-12. GALBŪT duota bus parametrizacija ir pvz pakeiskime parametrizacija, jog siūlė būtų kažkur kitoj vietoj.
+12. GALBŪT duota bus parametrizacija ir pvz pakeiskime parametrizaciją, jog siūlė būtų kažkur kitoj vietoj.
+---------
 13. Kameros padėtis: camera.up(), camera.lookAt().
 14. Kameros reguliavimas: OrthographicCamera(); PerspectiveCamera().
 15. Grafinis konvejeris 
@@ -21,7 +22,8 @@ Pvz. išdelioti erdvėj taškus ir paklaust koks iškilas apvalkalas dabar bus (
 17. WebGL šešėliuoklės Three.js aplinkoje.
 18. Fiksuotas funkcionalumas  [Šešėliuoklės]: (gale pdf)
 - difuzinis atspindys, - Phong atspindys, Blinn-Phong atspindys.
-PVZ> klausimas iš kodo supratimo, kur normalės, koks kampas skaičiuoajams, kas su jom atsitinka.
+GALBŪT: PVZ> klausimas iš kodo supratimo, kur normalės, koks kampas skaičiuoajams, kas su jom atsitinka.
 19. Procedūrinės tekstūros.
+20. Praeiti iš nuajo tekstą ir kur GALBŪT/TIKRAI peržiūrėt, praktinius uždv pasižėt/paspręst.
 
 Puslapį atsinešt iš VMA atsispausdinus
